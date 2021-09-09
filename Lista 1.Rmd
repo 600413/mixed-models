@@ -10,13 +10,22 @@ output: html_document
 
 ## Exercício 1
 
-$$
+Prove a expressão
+\[
+cov(y, w) = cov_u(E(y|u), E(w|u)) + E_u(cov(y, w)|u)
+\]
 
-cov(y, w) = cov_u(E(y|u), E(w|u)) + E_u(cov(y, w)|u) = E[yw] - E(y)E(w),
+**Resposta:**
+
+Como
 
 $$
-como $E(g) = E_y[E(g|y)]$
+cov(y, w) = E[yw] - E(y)E(w),
+$$
+sabendo que $E(g) = E_y[E(g|y)]$
+
 \[cov(y, w) = E_u[E(yw|u)] - E_u[E(y|u)] E_u[E(w|u)],\]
+
 tomando que $E(yw|u) = cov(y, w|u) + E(y|u)E(w|u),$ temos que
 
 
@@ -26,8 +35,10 @@ cov(y, w) &= E_u[cov(y, w|u) + E(y|u)E(w|u)] - E_u[E(y|u)] E_u[E(w|u)] \\
           &= E_u[cov(y, w|u)] + E_u[E(y|u)E(w|u)] - E_u[E(y|u)] E_u[E(w|u)],
 \end{split}
 \]
+
 como $E_u[E(y|u)E(w|u)] - E_u[E(y|u)] E_u[E(w|u)] = cov_u(E(y|u), E(w|u))$
-\[cov(y, w) = E_u[cov(y, w|u)] + cov_u(E(y|u), E(w|u)).\]
+
+$\therefore cov(y, w) = E_u[cov(y, w|u)] + cov_u(E(y|u), E(w|u)).$
 
 ## Exercício 1 (seção 2.1)
 
