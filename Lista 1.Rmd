@@ -12,7 +12,7 @@ output: html_document
 
 $$
 
-cov(y, w) = cov_u(E(y|u), E(w|u)) + E_u(cov(y, w)|u)
+cov(y, w) = cov_u(E(y|u), E(w|u)) + E_u(cov(y, w)|u) = E[yw] - E(y)E(w)
 
 $$
 
