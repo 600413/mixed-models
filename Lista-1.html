@@ -379,6 +379,97 @@ cov(y, w) &amp;= E_u[cov(y, w|u) + E(y|u)E(w|u)] - E_u[E(y|u)] E_u[E(w|u)] \\
 </div>
 <div id="exercício-1-seção-2.1" class="section level2">
 <h2>Exercício 1 (seção 2.1)</h2>
+<ol style="list-style-type: decimal">
+<li>Estimate slope <span class="math inline">\(\beta\)</span> using the data Family.txt, assuming that the family-specific intercepts are fixed, using the dummy variable technique. [Hint: Estimate the linear regression model with <span class="math inline">\(1 + 18 = 19\)</span> parameters using lm(y~X-1), where y=famdat$Weight and X is the <span class="math inline">\(71 \times 19\)</span> and the other 18 columns as dummy variables.]</li>
+</ol>
+<p><strong>Resposta:</strong></p>
+<p>Como no comando do exercício será ajustado um modelo linear com apenas efeitos fixos, sendo eles, Height e FamilyID, sem intercepto.</p>
+<pre class="r"><code>family = read.table(&quot;Family.txt&quot;, header = TRUE, stringsAsFactors = FALSE)
+family$FamilyID = factor(family$FamilyID)
+mod1 = lm(Weight ~ Height + FamilyID - 1, data = family)</code></pre>
+<p>O coeficiente angular para a altura é 5.907, assim, O peso e altura se relacionam como <span class="math inline">\(\widehat{peso_{ij}} = \widehat{familia_i} + 5.907 altura_{ij},\)</span> em que o índice <span class="math inline">\(i = 1, 2, \dots, 18\)</span> é a família do j-ésimo indivíduo, com os coeficientes:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FamilyID1</td>
+<td align="right">-215.0825</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID2</td>
+<td align="right">-251.8518</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID3</td>
+<td align="right">-227.1979</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID4</td>
+<td align="right">-281.9329</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID5</td>
+<td align="right">-263.8219</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID6</td>
+<td align="right">-240.7572</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID7</td>
+<td align="right">-252.6809</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID8</td>
+<td align="right">-262.8287</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID9</td>
+<td align="right">-238.3499</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID10</td>
+<td align="right">-254.8798</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID11</td>
+<td align="right">-248.5835</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID12</td>
+<td align="right">-240.1530</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID13</td>
+<td align="right">-261.5787</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID14</td>
+<td align="right">-209.8782</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID15</td>
+<td align="right">-224.1346</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID16</td>
+<td align="right">-256.5140</td>
+</tr>
+<tr class="odd">
+<td align="left">FamilyID17</td>
+<td align="right">-260.7408</td>
+</tr>
+<tr class="even">
+<td align="left">FamilyID18</td>
+<td align="right">-238.6131</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="exercício-2-seção-2.1" class="section level2">
 <h2>Exercício 2 (seção 2.1)</h2>

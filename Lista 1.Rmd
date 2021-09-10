@@ -41,6 +41,25 @@ como $E_u[E(y|u)E(w|u)] - E_u[E(y|u)] E_u[E(w|u)] = cov_u(E(y|u), E(w|u))$
 $\therefore cov(y, w) = E_u[cov(y, w|u)] + cov_u(E(y|u), E(w|u)).$
 
 ## Exercício 1 (seção 2.1)
+1. Estimate slope $\beta$ using the data Family.txt, assuming that the family-specific intercepts are fixed, using the dummy variable technique. [Hint: Estimate the linear regression model with $1 + 18 = 19$ parameters using lm(y~X-1), where y=famdat\$Weight and X is the $71 \times 19$ and the other 18 columns as dummy variables.]
+
+**Resposta:**
+
+Como no comando do exercício será ajustado um modelo linear com apenas efeitos fixos, sendo eles, Height e FamilyID, sem intercepto.
+
+```{r}
+family = read.table("Family.txt", header = TRUE, stringsAsFactors = FALSE)
+family$FamilyID = factor(family$FamilyID)
+mod1 = lm(Weight ~ Height + FamilyID - 1, data = family)
+```
+
+O coeficiente angular para a altura é `r round(mod1$coefficients["Height"], 3)`, assim, O peso e altura se relacionam como $\widehat{peso_{ij}} = \widehat{familia_i} + `r round(mod1$coefficients["Height"], 3)` altura_{ij},$ em que o índice $i = 1, 2, \dots, 18$ é a família do j-ésimo indivíduo, com os coeficientes:
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+kable(coef(mod1)[-1])
+```
+
 
 
 ## Exercício 2 (seção 2.1)
