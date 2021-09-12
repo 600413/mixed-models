@@ -64,8 +64,88 @@ kable(coef(mod1)[-1])
 
 ## Exercício 2 (seção 2.1)
 
+2. Denote $ d = \frac{\sigma^2_d}{\sigma^2} $  as the scaled (or relative) variance of the random intercept. Express the covariance matrix (2.3) in he form $ I + d11'$, where **1** is the column of vectors of 1s.
+
+**Resposta:**
+
+Segue abaixo matriz de covariância (2.3) dos elementos do grupo i.
+
+$$
+V_i = \begin{bmatrix}
+1+\frac{\sigma^2_d}{\sigma^2} & ... & \frac{\sigma^2_d}{\sigma^2}\\
+⋮ & & ⋮\\
+\frac{\sigma^2_d}{\sigma^2} & ... & 1+\frac{\sigma^2_d}{\sigma^2}
+\end{bmatrix}
+$$
+
+
+
+
 
 ## Exercício 4 (seção 2.1)
+
+4. Incorporate sex and (possibly Age) into the model using fixed = Weight+Age. Is Age statistically significant? Provide an interpretation for the model.
+
+
+**Resposta:**
+
+Como o exercício não define se a solução deve ser usando modelos fixos ou mistos, vamos trazer as duas soluções.
+
+#### Modelo de efeitos fixos
+
+Primeiramente foi ajustado um modelo de efeitos fixos com as variáveis *Sex*, *Weight* e *Age*. Nesse modelo o intercepto também é um parâmetro fixo e único para todas as pessoas, independente da família.
+
+```{r}
+## leitura dos dados
+family = read.table("Family.txt", header = TRUE, stringsAsFactors = FALSE)
+## transformando identificador de familia e sexo em fator
+family$FamilyID = factor(family$FamilyID)
+family$Sex = factor(family$Sex)
+
+## ajuste do modelo com efeitos fixos
+mod2 = lm(Weight ~ Height + Age + Sex, data = family)
+
+summary(mod2)
+```
+Vemos que apenas o interpecto não é significativo a um nível de confiança de 95%.
+Observando os coeficientes agulares dessas variáveis podemos concluir que:
+* *Age*: Com coeficiente positivo, podemos dizer que peso e idade são diretamente proporcionais.
+* *Height*: Com coeficiente positivo, podemos dizer que peso e altura são diretamente proporcionais.
+* *Sex*: pessoas do sexo 1 tem, em média 26,06 libras a mais de peso do que pessoas do sexo 0.
+
+
+#### Modelo de efeitos mistos
+
+Ajustando agora um modelo de efeitos mistos que passa a considerar o intercepto como uma variável aleatória que tem uma estimativa diferente para cada família (fator aleatório).
+
+Com a alteração o intercepto passa a ser estatísticamente significativo a um nível de 95% e todas as variáveis também são significativas e mantém a interpretação acima, a diferença entre os modelos é que agora consideramos a correlação dos membros da mesma família, e temos um desvio padrão associado ao fator aleatório de família *14.06325*.
+
+```{r}
+
+library(nlme)
+## ajuste do modelo misto
+mod3 = lme (Weight ~Height + Age + Sex, random=~ 1 |FamilyID, data=family)
+
+summary(mod3)
+
+
+```
+
+Segue uma tabela de parâmetros para o modelo ajustado. Vemos que cada uma das 18 famílias possui um valor de intercepto diferente e os demais parâmetros têm a mesma estimativa para todas as familias, pois são fixos.
+
+```{r}
+
+coef(mod3)
+
+```
+
+
+
+
+
+
+
+
 
 
 
