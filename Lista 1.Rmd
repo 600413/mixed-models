@@ -2,7 +2,7 @@
 title: "Lista 1"
 author: 
   - Álvaro Jerônimo da Silva Kothe
-  - Giovanni
+  - Giovanni Pastori Piccirilli
   - Larissa Porto Eleutério
 date: "16/09/2021"
 output: html_document
