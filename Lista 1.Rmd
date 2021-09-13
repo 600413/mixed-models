@@ -2,6 +2,7 @@
 title: "Lista 1"
 author: 
   - Álvaro Jerônimo da Silva Kothe
+  - Giovanni
   - Larissa Porto Eleutério
 date: "16/09/2021"
 output: html_document
@@ -64,7 +65,7 @@ kable(coef(mod1)[-1])
 
 ## Exercício 2 (seção 2.1)
 
-2. Denote $ d = \frac{\sigma^2_d}{\sigma^2} $  as the scaled (or relative) variance of the random intercept. Express the covariance matrix (2.3) in he form $ I + d11'$, where **1** is the column of vectors of 1s.
+2. Denote \[d = \frac{\sigma^2_d}{\sigma^2}\]  as the scaled (or relative) variance of the random intercept. Express the covariance matrix (2.3) in he form \[ I + d11' \], where **1** is the column of vectors of 1s.
 
 **Resposta:**
 
@@ -73,10 +74,11 @@ Segue abaixo matriz de covariância (2.3) dos elementos do grupo i.
 $$
 V_i = \begin{bmatrix}
 1+\frac{\sigma^2_d}{\sigma^2} & ... & \frac{\sigma^2_d}{\sigma^2}\\
-⋮ & & ⋮\\
+⋮ &⋮ & ⋮\\
 \frac{\sigma^2_d}{\sigma^2} & ... & 1+\frac{\sigma^2_d}{\sigma^2}
 \end{bmatrix}
 $$
+
 
 
 
@@ -107,11 +109,12 @@ mod2 = lm(Weight ~ Height + Age + Sex, data = family)
 
 summary(mod2)
 ```
+
 Vemos que apenas o interpecto não é significativo a um nível de confiança de 95%.
 Observando os coeficientes agulares dessas variáveis podemos concluir que:
-* *Age*: Com coeficiente positivo, podemos dizer que peso e idade são diretamente proporcionais.
-* *Height*: Com coeficiente positivo, podemos dizer que peso e altura são diretamente proporcionais.
-* *Sex*: pessoas do sexo 1 tem, em média 26,06 libras a mais de peso do que pessoas do sexo 0.
+- *Age*: Com coeficiente positivo, podemos dizer que peso e idade são diretamente proporcionais.
+- *Height*: Com coeficiente positivo, podemos dizer que peso e altura são diretamente proporcionais.
+- *Sex*: pessoas do sexo 1 tem, em média 26,06 libras a mais de peso do que pessoas do sexo 0.
 
 
 #### Modelo de efeitos mistos
