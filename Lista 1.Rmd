@@ -46,7 +46,39 @@ $\therefore cov(y, w) = E_u[cov(y, w|u)] + cov_u(E(y|u), E(w|u)).$
 
 **Resposta:**
 
-Como no comando do exercício será ajustado um modelo linear com apenas efeitos fixos, sendo eles, Height e FamilyID, sem intercepto.
+Como no comando do exercício será ajustado um modelo linear com apenas efeitos fixos, sendo eles, Height e FamilyID, sem intercepto. Logo nosso modelo terá 19 parâmetros no total, sendo 18 interceptos (o efeito espcifico para cada família) e o parâmetro relacionado a Height.
+
+$$
+ y_{ij} = \alpha_i + \beta_1 x_ij + \epsilon_{ij}
+$$
+com $i = 1, \dots, 18$ e $j = 1, \dots, n_i$. O modelo matricialmente pode ser escrito como
+
+$$
+\left(\begin{array}{c}
+y_{11} \\
+y_{12} \\
+\vdots \\
+y_{18 n_{18}}
+\end{array}\right) =
+\left(\begin{array}{ccccc}
+\boldsymbol{1}_{n_1} & 0 & \dots & 0 & \boldsymbol{x}_{1.}\\
+ 0 &\boldsymbol{1}_{n_2} & \dots & 0 & \boldsymbol{x}_{2.}\\
+ \vdots & \vdots &\vdots &\vdots &\vdots  \\
+ 0 & 0 & \dots & \boldsymbol{1}_{n_{18}} & \boldsymbol{x}_{18.} 
+\end{array}\right) \left(\begin{array}{c}
+\alpha_{1} \\
+\alpha_{2} \\
+\vdots \\
+\alpha_{18} \\
+\beta_{1}
+\end{array}\right) +
+\left(\begin{array}{c}
+\epsilon_{11} \\
+\epsilon_{12} \\
+\vdots \\
+\epsilon_{18 n_{18}}
+\end{array}\right)
+$$
 
 ```{r}
 family = read.table("Family.txt", header = TRUE, stringsAsFactors = FALSE)
@@ -61,7 +93,7 @@ library(knitr)
 kable(coef(mod1)[-1])
 ```
 
-
+Todas as estimativas dos parâmetros foram significativas, mostrando que realmente existe o efeito da família. O problema é que a variância das nossas estimativas foram altas, que de certa forma pode atrapalhar na inferência do modelo, mostrando uma fragilidade desse modelo. Além disso, não temos como assumir que os efeitos das famílias são fixos, não sabemos se as observações são independentes dentro das famílias. Os modelos mistos nos permite adicionar um efeito aleatório que prediz o efeito da família, além de captar essa variabilidade que existe entre as famílias.
 
 ## Exercício 2 (seção 2.1)
 
@@ -79,9 +111,27 @@ V_i = \begin{bmatrix}
 \end{bmatrix}
 $$
 
+$$
+V_i = 
+\left[\begin{array}{ccccc}
+1 + d & d & \dots & d \\
+ d & 1 + d & \dots & d \\
+ \vdots & \vdots &\vdots &\vdots \\
+ d & d & \dots & 1 + d 
+\end{array}\right] = \boldsymbol{I} + \left[\begin{array}{ccccc}
+d & d & \dots & d \\
+ d & d & \dots & d \\
+ \vdots & \vdots &\vdots &\vdots \\
+ d & d & \dots & d 
+\end{array}\right] =  \boldsymbol{I} + d\left[\begin{array}{ccccc}
+1 & 1 & \dots & 1 \\
+ 1 & 1 & \dots & 1 \\
+ \vdots & \vdots &\vdots &\vdots \\
+ 1 & 1 & \dots & 1 
+\end{array}\right] = \boldsymbol{I} + d\boldsymbol{1}\boldsymbol{1}'
+$$
 
-
-
+em que $I$ é uma matriz identidade.
 
 
 ## Exercício 4 (seção 2.1)
@@ -119,9 +169,9 @@ Observando os coeficientes agulares dessas variáveis podemos concluir que:
 
 #### Modelo de efeitos mistos
 
-Ajustando agora um modelo de efeitos mistos que passa a considerar o intercepto como uma variável aleatória que tem uma estimativa diferente para cada família (fator aleatório).
+Ajustando agora um modelo de efeitos mistos que passa a considerar o intercepto como uma variável aleatória com distribuição Normal. Os efeitos aleatórios são preditos para cada uma das famílias (fator aleatório).
 
-Com a alteração o intercepto passa a ser estatísticamente significativo a um nível de 95% e todas as variáveis também são significativas e mantém a interpretação acima, a diferença entre os modelos é que agora consideramos a correlação dos membros da mesma família, e temos um desvio padrão associado ao fator aleatório de família *14.06325*.
+Com a alteração o intercepto passa a ser estatísticamente significativo a um nível de 95% e todas as variáveis também são significativas, mantndo a interpretação acima. A diferença entre os modelos é que agora consideramos a correlação dos membros da mesma família, e temos um desvio padrão associado ao fator aleatório de família *14.06325*.
 
 ```{r}
 
@@ -134,7 +184,8 @@ summary(mod3)
 
 ```
 
-Segue uma tabela de parâmetros para o modelo ajustado. Vemos que cada uma das 18 famílias possui um valor de intercepto diferente e os demais parâmetros têm a mesma estimativa para todas as familias, pois são fixos.
+
+A tabela abaixo mostra os valores preditos para os efeitos aleatórios e as estimativas dos parâmetros. Vemos que cada uma das 18 famílias possui um valor predito de intercepto diferente e os demais parâmetros têm a mesma estimativa para todas as familias, pois são fixos.
 
 ```{r}
 
