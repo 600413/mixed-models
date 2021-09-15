@@ -1,5 +1,5 @@
 ---
-title: "Lista 1"
+title: "Modelos Mistos - Lista 1"
 author: 
   - Álvaro Jerônimo da Silva Kothe
   - Giovanni Pastori Piccirilli
@@ -7,6 +7,7 @@ author:
 date: "16/09/2021"
 output: html_document
 ---
+
 
 
 ## Exercício 1
@@ -23,7 +24,7 @@ Como
 $$
 cov(y, w) = E[yw] - E(y)E(w),
 $$
-sabendo que $E(g) = E_y[E(g|y)]$
+e sabendo que $E(g) = E_y[E(g|y)]$, temos que
 
 \[cov(y, w) = E_u[E(yw|u)] - E_u[E(y|u)] E_u[E(w|u)],\]
 
@@ -39,7 +40,7 @@ cov(y, w) &= E_u[cov(y, w|u) + E(y|u)E(w|u)] - E_u[E(y|u)] E_u[E(w|u)] \\
 
 como $E_u[E(y|u)E(w|u)] - E_u[E(y|u)] E_u[E(w|u)] = cov_u(E(y|u), E(w|u))$
 
-$\therefore cov(y, w) = E_u[cov(y, w|u)] + cov_u(E(y|u), E(w|u)).$
+\[\therefore cov(y, w) = E_u[cov(y, w|u)] + cov_u(E(y|u), E(w|u)).\]
 
 ## Exercício 1 (seção 2.1)
 1. Estimate slope $\beta$ using the data Family.txt, assuming that the family-specific intercepts are fixed, using the dummy variable technique. [Hint: Estimate the linear regression model with $1 + 18 = 19$ parameters using lm(y~X-1), where y=famdat\$Weight and X is the $71 \times 19$ and the other 18 columns as dummy variables.]
@@ -49,7 +50,7 @@ $\therefore cov(y, w) = E_u[cov(y, w|u)] + cov_u(E(y|u), E(w|u)).$
 Como no comando do exercício será ajustado um modelo linear com apenas efeitos fixos, sendo eles, Height e FamilyID, sem intercepto. Logo nosso modelo terá 19 parâmetros no total, sendo 18 interceptos (o efeito espcifico para cada família) e o parâmetro relacionado a Height.
 
 $$
- y_{ij} = \alpha_i + \beta_1 x_ij + \epsilon_{ij}
+ y_{ij} = \alpha_i + \beta_1 x_{ij} + \epsilon_{ij}
 $$
 com $i = 1, \dots, 18$ e $j = 1, \dots, n_i$. O modelo matricialmente pode ser escrito como
 
@@ -88,16 +89,15 @@ mod1 = lm(Weight ~ Height + FamilyID - 1, data = family)
 
 O coeficiente angular para a altura é `r round(mod1$coefficients["Height"], 3)`, assim, O peso e altura se relacionam como $\widehat{peso_{ij}} = \widehat{familia_i} + `r round(mod1$coefficients["Height"], 3)` altura_{ij},$ em que o índice $i = 1, 2, \dots, 18$ é a família do j-ésimo indivíduo, com os coeficientes:
 
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(knitr)
-kable(coef(mod1)[-1])
+```{r}
+summary(mod1)
 ```
 
 Todas as estimativas dos parâmetros foram significativas, mostrando que realmente existe o efeito da família. O problema é que a variância das nossas estimativas foram altas, que de certa forma pode atrapalhar na inferência do modelo, mostrando uma fragilidade desse modelo. Além disso, não temos como assumir que os efeitos das famílias são fixos, não sabemos se as observações são independentes dentro das famílias. Os modelos mistos nos permite adicionar um efeito aleatório que prediz o efeito da família, além de captar essa variabilidade que existe entre as famílias.
 
 ## Exercício 2 (seção 2.1)
 
-2. Denote \[d = \frac{\sigma^2_d}{\sigma^2}\]  as the scaled (or relative) variance of the random intercept. Express the covariance matrix (2.3) in he form \[ I + d11' \], where **1** is the column of vectors of 1s.
+2. Denote $d = \frac{\sigma^2_d}{\sigma^2}$  as the scaled (or relative) variance of the random intercept. Express the covariance matrix (2.3) in he form  $I + d11'$, where **1** is the column of vectors of 1s.
 
 **Resposta:**
 
