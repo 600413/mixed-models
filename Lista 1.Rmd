@@ -162,9 +162,10 @@ summary(mod2)
 
 Vemos que apenas o interpecto não é significativo a um nível de confiança de 95%.
 Observando os coeficientes agulares dessas variáveis podemos concluir que:
-- *Age*: Com coeficiente positivo, podemos dizer que peso e idade são diretamente proporcionais.
-- *Height*: Com coeficiente positivo, podemos dizer que peso e altura são diretamente proporcionais.
-- *Sex*: pessoas do sexo 1 tem, em média 26,06 libras a mais de peso do que pessoas do sexo 0.
+
+* **Age**: Com coeficiente positivo, podemos dizer que peso e idade são diretamente proporcionais.
+* **Height**: Com coeficiente positivo, podemos dizer que peso e altura são diretamente proporcionais.
+* **Sex**: pessoas do sexo 1 tem, em média 26,06 libras a mais de peso do que pessoas do sexo 0.
 
 
 #### Modelo de efeitos mistos
