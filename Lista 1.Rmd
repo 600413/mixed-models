@@ -1,15 +1,33 @@
 ---
-title: "Modelos Mistos - Lista 1"
-author: 
-  - Álvaro Jerônimo da Silva Kothe
-  - Giovanni Pastori Piccirilli
-  - Larissa Porto Eleutério
-  - Marcos Luiz da Silva Andrade
-date: "16/09/2021"
-output: html_document
+title: ""
+author: ""
+date: ""
+output:
+  pdf_document:
+    latex_engine: xelatex
 ---
 
 
+\begin{minipage}{.8\textwidth}
+\textbf{Alunos:} Álvaro Kothe, Giovanni Piccirilli, Larissa Eleutério, Marcos Andrade
+
+\textbf{Docente:} Viviana Giampaoli
+
+\textbf{Data:} 16/09/2021 
+
+
+\end{minipage}	
+\begin{minipage}{.2\textwidth}
+	\includegraphics[width=.3\linewidth]{logo_ime_usp.png}
+\end{minipage}	
+	
+\hrulefill
+
+\begin{center}
+\Large{Modelos Mistos - Lista 1}
+\end{center}
+
+\vspace{0.5cm}
 
 ## Exercício 1
 
