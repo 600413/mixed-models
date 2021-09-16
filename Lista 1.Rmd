@@ -4,6 +4,7 @@ author:
   - Álvaro Jerônimo da Silva Kothe
   - Giovanni Pastori Piccirilli
   - Larissa Porto Eleutério
+  - Marcos Luiz da Silva Andrade
 date: "16/09/2021"
 output: html_document
 ---
