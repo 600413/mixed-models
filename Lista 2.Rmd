@@ -5,35 +5,107 @@ date: "21/09/2021"
 output: pdf_document
 ---
 
+```{r, message=F, warning=F}
+## importando pacote e dados necessários
+
+library(nlme)
+data("Orthodont")
+data = Orthodont
+
+```
+
+
 ## Exercício 1
 
 Cosidere a base Orthodont, ajuste o modelos misto da distância em função da idade e do sexo, com o efeito aleatório sujeito, considerando o método ML e REML. Observe se existe diferenças.
 
+**Resposta:**
+
+Primeiramente ajustamos o modelo pelo método da máxima verossimilhança.
+
+
 ```{r}
-library(nlme)
-data("Orthodont")
-data = Orthodont
+
+## ajustando um modelo de efeitos fixos pelo método da máxima verossimilhança
 lmeML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="ML",data=data) 
-lmeREML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data)
-summary(lmeML1)
-summary(lmeREML1)
+
+## resultados
+lmeML1
+
 ```
+
+As estimativas dos parâmetros são:
+
+* intercepto: 17,7
+* idade: 0,66
+* sexo: caso 
+* desvio padrão dos resíduos: 1.4
+* desvio padrão do efeito aleatório: 1,7
+
+
+Ajustando agora o modelo com o método da máxima verossimilhança restrita vemos que a estimativa dos parâmetros se mantêm, exceto pela estimativa do desvio do efeito aleatório que agora é estimado em 1.8.
+
+```{r}
+
+## ajustando um modelo de efeitos fixos pelo método da máxima verossimilhança restrita
+lmeREML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data)
+
+## resultados
+summary(lmeREML1)
+
+```
+
+
+
 
 ## Exercício 2 
 Refaça o item anterior considerando outra parametrização.
+
+**Resposta:**
+
+A parametrização padrão para variáveis categóricas no pacote nlme é a casela de referência, onde crianças do sexo masculino foram marcadas com '0' e crianças do sexo femenino como '1'.
+
+
+```{r}
+
+lmeML1$contrasts
+
+```
+
+Agora iremos alterar a parametricação para contraste da soma, onde o sexo masculino aparece como '1' e o sexo feminino como '-1'.
+
+Ajustando o modelo com estimativa de máxima verossimilhança para os parâmetros vemos que apenas as estimativas do intercepto e do coeficiente associado ao fator fixo de idade se alteram. As demais estimativas se mantêm iguais ao modelo ajustado pela máxima verissimilhança com a parametrização casela de referência.
+
 ```{r}
 lmeML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="ML",data=data,
            contrasts = list(Sex = "contr.sum")) 
+
+summary(lmeML2)
+lmeML2$contrasts
+
+```
+
+Similar a situação anterior, quando comparamos as estimativas do modelo estimado com máxima verossimilhança restrita, e diferença na parametrização de sexo, apenas intercepto e estimativa de coeficiente associado ao sexo são diferentes.
+
+
+```{r}
+
 lmeREML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data,
              contrasts = list(Sex = "contr.sum")) 
-summary(lmeML2)
+
 summary(lmeREML2)
-lmeML2$contrasts
+
+
 ```
+
 
 ## Exercício 3
 
 Considerando valores próximos as estimativas de ML para os parâmetros fixos e de REML para as componentes de variância, simule duas novas bases de dados, uma em que o número de meninos é 32 e o de meninas é 22, e outra em que o número de meninos é 96 e o de meninas 33.
+
+
+**Resposta:**
+
 
 ```{r}
 age = 0.6
