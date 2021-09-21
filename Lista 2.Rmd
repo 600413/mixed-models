@@ -5,6 +5,12 @@ date: "21/09/2021"
 output: pdf_document
 ---
 
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(knitr)
+library(kableExtra)
+```
+
+
 ```{r, message=F, warning=F}
 ## importando pacote e dados necessários
 
@@ -85,7 +91,7 @@ lmeML2$contrasts
 
 ```
 
-Similar a situação anterior, quando comparamos as estimativas do modelo estimado com máxima verossimilhança restrita, e diferença na parametrização de sexo, apenas intercepto e estimativa de coeficiente associado ao sexo são diferentes.
+Similar a situação anterior, quando comparamos as estimativas do modelo estimado com máxima verossimilhança restrita, e diferença na parametrização de sexo, apenas intercepto e estimativa de coeficiente associado ao sexo são diferentes. Além disso, as variâncias de ambos os modelos permaneceram iguais.
 
 
 ```{r}
@@ -132,13 +138,13 @@ datasim2 = data.frame(cbind(y, X2, individuo))
 head(datasim2)
 names(datasim2) = c("y","Intercept", "age", "Sex","Subject")
 table(datasim2$Sex)/4
-lmeML1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim2) 
-lmeML1$sigma
-lmeML1$coefficients$fixed
+lmeML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim2) 
+lmeML_sim1$sigma
+lmeML_sim1$coefficients$fixed
 
-lmeREML1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim2) 
-lmeREML1$sigma
-lmeREML1$coefficients$fixed
+lmeREML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim2) 
+lmeREML_sim1$sigma
+lmeREML_sim1$coefficients$fixed
 ```
 
 ```{r}
@@ -165,8 +171,63 @@ individuo = rep(seq(1:129),each = 4)
 datasim3 = data.frame(cbind(y, X3, individuo))
 head(datasim3)
 names(datasim3) = c("y","Intercept", "age", "Sex","Subject")
-lmeML2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim3) 
-lmeML2$sigma
-lmeML2$coefficients$fixed
+
+lmeML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim3) 
+lmeML_sim2$sigma
+lmeML_sim2$coefficients$fixed
+
+
+lmeREML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim3) 
+lmeREML_sim2$sigma
+lmeREML_sim2$coefficients$fixed
 ```
 
+
+## Exercício 4
+
+Realize o solicitado nos itens anteriores para a nova base.
+
+**Resposta:**
+
+### Base simulada 1: 32 meninos e 22 meninas.
+
+### Base simulada 2: 96 meninos e 33 meninas.
+
+## Exercício 5
+
+Compare os resultados
+
+**Resposta:**
+```{r include=FALSE}
+# Extrai informação do modelo
+extrai_estimativas = function(modelo) {
+    betas = modelo$coefficients$fixed
+    desvios = as.numeric(VarCorr(modelo)[,2])
+    estimativas = c(betas, desvios)
+    names(estimativas) = c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_b}$")
+    
+    return(estimativas)
+}
+
+```
+
+```{r echo=FALSE}
+library(purrr)
+
+lst_modelos = list(
+    "ML" = lmeML1,
+    "ML reparametrizado" = lmeML2,
+    "ML Simulado 1" = lmeML_sim1,
+    "ML Simulado 2" = lmeML_sim2,
+    
+    "REML" = lmeREML1,
+    "REML reparametrizado" = lmeREML2,
+    "REML Simulado 1" = lmeREML_sim1,
+    "REML Simulado 2" = lmeREML_sim2
+)
+
+tabela_estimativas = map_dfr(lst_modelos, extrai_estimativas, .id = "Modelo")
+
+kable(tabela_estimativas, escape = FALSE, booktabs = TRUE, linesep = "")
+
+```
