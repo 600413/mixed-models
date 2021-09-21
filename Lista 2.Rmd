@@ -5,12 +5,96 @@ date: "21/09/2021"
 output: pdf_document
 ---
 
+## Exercício 1
 
+Cosidere a base Orthodont, ajuste o modelos misto da distância em função da idade e do sexo, com o efeito aleatório sujeito, considerando o método ML e REML. Observe se existe diferenças.
 
+```{r}
+library(nlme)
+data("Orthodont")
+data = Orthodont
+lmeML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="ML",data=data) 
+lmeREML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data)
+summary(lmeML1)
+summary(lmeREML1)
+```
 
+## Exercício 2 
+Refaça o item anterior considerando outra parametrização.
+```{r}
+lmeML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="ML",data=data,
+           contrasts = list(Sex = "contr.sum")) 
+lmeREML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data,
+             contrasts = list(Sex = "contr.sum")) 
+summary(lmeML2)
+summary(lmeREML2)
+lmeML2$contrasts
+```
 
+## Exercício 3
 
+Considerando valores próximos as estimativas de ML para os parâmetros fixos e de REML para as componentes de variância, simule duas novas bases de dados, uma em que o número de meninos é 32 e o de meninas é 22, e outra em que o número de meninos é 96 e o de meninas 33.
 
+```{r}
+age = 0.6
+sex = -2.5
+intercepto = 17
+sigmab = 1.85^2 #o summary solta o desvio padrão
+sigma = 1.45^2
+set.seed(2109)
+#Para 32 meninos e 22 meninas
+head(data)
+X = model.matrix(~age + Sex, data)
+X2 = rbind(X,X) #Dobrei a matrix X
+beta1 = c(intercepto, age, sex)
+muv = X2%*%beta1
+Zi = matrix(1,4,1) #matriz dos efeitos aletorios de cada individuo i (são iguais
+#para todo i)
+Vi = sigma*(diag(4)) + sigmab*(Zi%*%(t(Zi))) # Matriz de variância para indiv i
+V = kronecker(diag(27*2), Vi) #matriz de variancia geral, essa multiplicação
+#cria uma matriz quadrada em que cada elemento da diagonal é Vi
+library(MASS)
+y = mvrnorm(1, muv, V) #simulando da normal multivariada
+individuo = rep(seq(1:54),each = 4) #gerando o indice dos individuos
+datasim2 = data.frame(cbind(y, X2, individuo))
+head(datasim2)
+names(datasim2) = c("y","Intercept", "age", "Sex","Subject")
+table(datasim2$Sex)/4
+lmeML1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim2) 
+lmeML1$sigma
+lmeML1$coefficients$fixed
 
+lmeREML1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim2) 
+lmeREML1$sigma
+lmeREML1$coefficients$fixed
+```
 
+```{r}
+#Para 96 meninos e 32 meninas
+
+X = model.matrix(~age + Sex, data)
+Xmale = X[X[,3] == 0,]
+Xmale = matrix(rep(t(Xmale), 6), ncol = ncol(Xmale), byrow = TRUE)
+nrow(Xmale)/4
+Xfemale = X[X[,3] == 1,]
+Xfemale = matrix(rep(t(Xfemale), 3), ncol = ncol(Xfemale), byrow = TRUE)
+nrow(Xfemale)/4
+
+X3 = rbind(Xmale, Xfemale)
+beta1 = c(intercepto, age, sex)
+muv = X3%*%beta1
+Zi = matrix(1,4,1)
+Z = kronecker(diag(129), Zi)
+Vi = sigma*(diag(4)) + sigmab*(Zi%*%(t(Zi)))
+V = kronecker(diag(129), Vi)
+library(MASS)
+y = mvrnorm(1, muv, V)
+individuo = rep(seq(1:129),each = 4)
+datasim3 = data.frame(cbind(y, X3, individuo))
+head(datasim3)
+names(datasim3) = c("y","Intercept", "age", "Sex","Subject")
+lmeML2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim3) 
+lmeML2$sigma
+lmeML2$coefficients$fixed
+```
 
