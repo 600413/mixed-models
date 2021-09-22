@@ -1,9 +1,33 @@
 ---
-title: "Lista 2"
-author: "Álvaro Kothe, Giovanni Piccirilli, Larissa Eleutério, Marcos Andrade"
-date: "21/09/2021"
-output: pdf_document
+title: ""
+author: ""
+date: ""
+output:
+  pdf_document:
+    latex_engine: xelatex
 ---
+
+
+\begin{minipage}{.8\textwidth}
+\textbf{Alunos:} Álvaro Kothe, Giovanni Piccirilli, Larissa Eleutério, Marcos Andrade
+
+\textbf{Docente:} Viviana Giampaoli
+
+\textbf{Data:} 23/09/2021 
+
+
+\end{minipage}	
+\begin{minipage}{.2\textwidth}
+	\includegraphics[width=.3\linewidth]{logo_ime_usp.png}
+\end{minipage}	
+	
+\hrulefill
+
+\begin{center}
+\Large{Modelos Mistos - Lista 2}
+\end{center}
+
+\vspace{0.5cm}
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(knitr)
@@ -49,7 +73,7 @@ As estimativas dos parâmetros são:
 * desvio padrão do efeito aleatório: 1,7
 
 
-Ajustando agora o modelo com o método da máxima verossimilhança restrita vemos que a estimativa dos parâmetros se mantêm, exceto pela estimativa do desvio do efeito aleatório que agora é estimado em 1.8.
+Ajustando agora o modelo com o método da máxima verossimilhança restrita vemos que as estimativas dos coeficientes de efeito fixo se mantiveram. As estimativas dos desvios sofreram mudança.
 
 ```{r}
 
@@ -137,14 +161,8 @@ individuo = rep(seq(1:54),each = 4) #gerando o indice dos individuos
 datasim2 = data.frame(cbind(y, X2, individuo))
 head(datasim2)
 names(datasim2) = c("y","Intercept", "age", "Sex","Subject")
-table(datasim2$Sex)/4
-lmeML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim2) 
-lmeML_sim1$sigma
-lmeML_sim1$coefficients$fixed
+table(datasim2$Sex)/4 # 4 coletas por indivíduo
 
-lmeREML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim2) 
-lmeREML_sim1$sigma
-lmeREML_sim1$coefficients$fixed
 ```
 
 ```{r}
@@ -171,15 +189,6 @@ individuo = rep(seq(1:129),each = 4)
 datasim3 = data.frame(cbind(y, X3, individuo))
 head(datasim3)
 names(datasim3) = c("y","Intercept", "age", "Sex","Subject")
-
-lmeML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim3) 
-lmeML_sim2$sigma
-lmeML_sim2$coefficients$fixed
-
-
-lmeREML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim3) 
-lmeREML_sim2$sigma
-lmeREML_sim2$coefficients$fixed
 ```
 
 
@@ -191,7 +200,26 @@ Realize o solicitado nos itens anteriores para a nova base.
 
 ### Base simulada 1: 32 meninos e 22 meninas.
 
+```{r}
+lmeML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim2) 
+lmeML_sim1
+
+lmeREML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim2) 
+lmeREML_sim1
+```
+
+
 ### Base simulada 2: 96 meninos e 33 meninas.
+
+```{r}
+lmeML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim3) 
+lmeML_sim2
+
+
+lmeREML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim3) 
+lmeREML_sim2
+```
+
 
 ## Exercício 5
 
@@ -203,8 +231,9 @@ Compare os resultados
 extrai_estimativas = function(modelo) {
     betas = modelo$coefficients$fixed
     desvios = as.numeric(VarCorr(modelo)[,2])
-    estimativas = c(betas, desvios)
-    names(estimativas) = c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_b}$")
+    d = desvios[2]/desvios[1]
+    estimativas = c(betas, desvios, d)
+    names(estimativas) = c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_d}$", "$\\hat{\\sigma_d}/\\hat{\\sigma}$")
     
     return(estimativas)
 }
@@ -231,3 +260,5 @@ tabela_estimativas = map_dfr(lst_modelos, extrai_estimativas, .id = "Modelo")
 kable(tabela_estimativas, escape = FALSE, booktabs = TRUE, linesep = "")
 
 ```
+
+Pela tabela acima percebe-se que as estimativas dos efeitos fixos permanecem iguais quando ajustado no mesmo banco de dados, independente se foi utilizado o método de Maxíma verossimilhança ou máxima verossimilhança restrita. A principal diferença entre os métodos se encontra nas estimativas dos desvios padrão, em que o método de máxima verossimilhança subestima $\sigma$. Utilizando um banco de dados maior, que são as bases simuladas, vemos que a diferença entre os desvios é menor, o que leva a considerar que não existe diferença entre os métodos para uma amostra suficientemente grande.
