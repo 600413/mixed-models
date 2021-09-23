@@ -100,7 +100,7 @@ names(comparando_modelos) <- c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$"
 
 row.names(comparando_modelos) <- c("lmeML1", "lmeREML1")
 
-kable(comparando_modelos)
+kable(comparando_modelos, escape = FALSE)
 
 ```
 
@@ -172,7 +172,7 @@ names(comparando_modelos2) <- c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$
 row.names(comparando_modelos2) <- c("lmeML1", "lmeML2", "lmeREML1", "lmeREML2")
 
 
-kable(comparando_modelos2)
+kable(comparando_modelos2, escape = FALSE)
 
 
 ```
