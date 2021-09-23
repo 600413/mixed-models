@@ -78,7 +78,8 @@ Ajustando agora o modelo com o método da máxima verossimilhança restrita é p
 ```{r}
 
 ## ajustando um modelo de efeitos fixos pelo método da máxima verossimilhança restrita
-lmeREML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data)
+lmeREML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",
+             data=data)
 
 ## resultados
 lmeREML1
@@ -92,11 +93,14 @@ lmeREML1
 
 ```{r}
 
-comparando_modelos <- rbind(lmeML1$coefficients$fixed, lmeREML1$coefficients$fixed) %>% 
-  cbind(rbind(as.numeric(VarCorr(lmeML1)[,2]), as.numeric(VarCorr(lmeREML1)[,2]))) %>% 
+comparando_modelos <- rbind(lmeML1$coefficients$fixed,
+                            lmeREML1$coefficients$fixed) %>% 
+  cbind(rbind(as.numeric(VarCorr(lmeML1)[,2]), 
+              as.numeric(VarCorr(lmeREML1)[,2]))) %>% 
   as.data.frame()
 
-names(comparando_modelos) <- c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_d}$")
+names(comparando_modelos) <- c("Intercepto", "Idade", "Sexo",
+                               "$\\hat{\\sigma_d}$", "$\\hat{\\sigma}$")
 
 row.names(comparando_modelos) <- c("lmeML1", "lmeREML1")
 
@@ -142,8 +146,8 @@ Similar a situação anterior, quando se comparam as estimativas do modelo estim
 
 ```{r}
 
-lmeREML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data,
-             contrasts = list(Sex = "contr.sum")) 
+lmeREML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",
+             data=data, contrasts = list(Sex = "contr.sum")) 
 
 lmeREML2
 
@@ -163,11 +167,17 @@ Portanto, em ambas as parametrizações, se interpreta que o sexo masculino infl
 ```{r}
 
 
-comparando_modelos2 <- rbind(lmeML1$coefficients$fixed, lmeML2$coefficients$fixed, lmeREML1$coefficients$fixed, lmeREML2$coefficients$fixed) %>% 
-  cbind(rbind(as.numeric(VarCorr(lmeML1)[,2]), as.numeric(VarCorr(lmeML2)[,2]), as.numeric(VarCorr(lmeREML1)[,2]), as.numeric(VarCorr(lmeREML2)[,2]))) %>% 
+comparando_modelos2 <- rbind(lmeML1$coefficients$fixed, 
+                             lmeML2$coefficients$fixed, 
+                             lmeREML1$coefficients$fixed, 
+                             lmeREML2$coefficients$fixed) %>% 
+  cbind(rbind(as.numeric(VarCorr(lmeML1)[,2]), as.numeric(VarCorr(lmeML2)[,2]),
+              as.numeric(VarCorr(lmeREML1)[,2]), 
+              as.numeric(VarCorr(lmeREML2)[,2]))) %>% 
   as.data.frame()
 
-names(comparando_modelos2) <- c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_d}$")
+names(comparando_modelos2) <- c("Intercepto", "Idade", "Sexo", 
+                                "$\\hat{\\sigma_d}$", "$\\hat{\\sigma}$")
 
 row.names(comparando_modelos2) <- c("lmeML1", "lmeML2", "lmeREML1", "lmeREML2")
 
@@ -196,7 +206,7 @@ Para gerar a variável resposta simulada definimos os seguintes parâmetros:
 
 ##### Simulação para 54 indivívuos
 
-Vemos que as variáveis y (tamanho da glândula), intercepto e idade são numéricas, entquanto que sexo é uma variável categórica com dois fatores e sujeiro outr variável categórica com 54 fatores.
+Vemos que as variáveis y (tamanho da glândula), intercepto e idade são numéricas, entquanto que sexo é uma variável categórica com dois fatores e sujeito outra variável categórica com 54 fatores.
 O número total de linhas é 216 que representam os 54 indivíduos em cada uma das 4 idades observadas. 
 
 ```{r}
@@ -322,21 +332,21 @@ Compare os resultados.
 **Resposta:**
 
 
-```{r include=FALSE}
+```{r}
 # Extrai informação do modelo
 extrai_estimativas = function(modelo) {
     betas = modelo$coefficients$fixed
     desvios = as.numeric(VarCorr(modelo)[,2])
-    d = desvios[2]/desvios[1]
-    estimativas = c(betas, desvios, d)
-    names(estimativas) = c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_d}$", "$\\hat{\\sigma_d}/\\hat{\\sigma}$")
+    estimativas = c(betas, desvios)
+    names(estimativas) = c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma_d}$",
+                           "$\\hat{\\sigma}$")
     
     return(estimativas)
 }
 
 ```
 
-```{r echo=FALSE}
+```{r}
 library(purrr)
 
 lst_modelos = list(
@@ -359,6 +369,6 @@ kable(tabela_estimativas, escape = FALSE, booktabs = TRUE, linesep = "")
 
 Pela tabela acima percebe-se que as estimativas dos efeitos fixos permanecem iguais quando ajustado no mesmo banco de dados, independente se foi utilizado o método de Maxíma verossimilhança ou máxima verossimilhança restrita. 
 
-A principal diferença entre os métodos se encontra nas estimativas dos desvios padrão, em que o método de máxima verossimilhança subestima $\sigma$. 
+A principal diferença entre os métodos se encontra na estimativas dos desvios padrão, em que esta diferença é visível, porém pequena.
 
 Utilizando um banco de dados maior, que são as bases simuladas, vemos que a diferença entre os desvios é menor, o que leva a considerar que não existe diferença entre os métodos para uma amostra suficientemente grande.
