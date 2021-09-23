@@ -51,7 +51,7 @@ Cosidere a base Orthodont, ajuste o modelos misto da distância em função da i
 
 **Resposta:**
 
-Primeiramente ajustamos o modelo pelo método da máxima verossimilhança.
+Primeiramente ajustou-se o modelo pelo método da máxima verossimilhança.
 
 
 ```{r}
@@ -66,14 +66,14 @@ lmeML1
 
 As estimativas dos parâmetros são:
 
-* intercepto: 17,7
-* idade: 0,66
-* sexo: caso 
-* desvio padrão dos resíduos: 1.4
-* desvio padrão do efeito aleatório: 1,7
+* intercepto:  `r round(coef(summary(lmeML1))[1, 'Value'], 2) `
+* idade: `r round(coef(summary(lmeML1))[2, 'Value'], 2) `
+* sexo: `r round(coef(summary(lmeML1))[3, 'Value'], 2) `
+* desvio padrão dos resíduos: `r round(as.numeric(VarCorr(lmeML1)[2,2]), 2) `
+* desvio padrão do efeito aleatório: `r round(as.numeric(VarCorr(lmeML1)[1,2]), 2) `
 
 
-Ajustando agora o modelo com o método da máxima verossimilhança restrita vemos que as estimativas dos coeficientes de efeito fixo se mantiveram. As estimativas dos desvios sofreram mudança.
+Ajustando agora o modelo com o método da máxima verossimilhança restrita é possível ver que as estimativas dos coeficientes de efeito fixo se mantiveram. As estimativas dos desvios tiveram uma pequena alteração.
 
 ```{r}
 
@@ -81,11 +81,28 @@ Ajustando agora o modelo com o método da máxima verossimilhança restrita vemo
 lmeREML1=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data)
 
 ## resultados
-summary(lmeREML1)
+lmeREML1
 
 ```
 
 
+* desvio padrão dos resíduos: `r round(as.numeric(VarCorr(lmeREML1)[2,2]), 2) `
+* desvio padrão do efeito aleatório: `r round(as.numeric(VarCorr(lmeREML1)[1,2]), 2) `
+
+
+```{r}
+
+comparando_modelos <- rbind(lmeML1$coefficients$fixed, lmeREML1$coefficients$fixed) %>% 
+  cbind(rbind(as.numeric(VarCorr(lmeML1)[,2]), as.numeric(VarCorr(lmeREML1)[,2]))) %>% 
+  as.data.frame()
+
+names(comparando_modelos) <- c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_d}$")
+
+row.names(comparando_modelos) <- c("lmeML1", "lmeREML1")
+
+kable(comparando_modelos)
+
+```
 
 
 ## Exercício 2 
@@ -102,20 +119,25 @@ lmeML1$contrasts
 
 ```
 
-Agora iremos alterar a parametricação para contraste da soma, onde o sexo masculino aparece como '1' e o sexo feminino como '-1'.
+Agora  a parametricação será contraste da soma, onde o sexo masculino aparece como '1' e o sexo feminino como '-1'.
 
-Ajustando o modelo com estimativa de máxima verossimilhança para os parâmetros vemos que apenas as estimativas do intercepto e do coeficiente associado ao fator fixo de idade se alteram. As demais estimativas se mantêm iguais ao modelo ajustado pela máxima verissimilhança com a parametrização casela de referência.
 
 ```{r}
 lmeML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="ML",data=data,
            contrasts = list(Sex = "contr.sum")) 
 
-summary(lmeML2)
 lmeML2$contrasts
 
 ```
+Ajustando o modelo com estimativa de máxima verossimilhança para os parâmetros, apenas as estimativas do intercepto e do coeficiente associado ao fator fixo de idade se alteram. As demais estimativas se mantêm iguais ao modelo ajustado pela máxima verissimilhança com a parametrização casela de referência.
 
-Similar a situação anterior, quando comparamos as estimativas do modelo estimado com máxima verossimilhança restrita, e diferença na parametrização de sexo, apenas intercepto e estimativa de coeficiente associado ao sexo são diferentes. Além disso, as variâncias de ambos os modelos permaneceram iguais.
+```{r}
+
+lmeML2
+
+```
+
+Similar a situação anterior, quando se comparam as estimativas do modelo estimado com máxima verossimilhança restrita, e diferença na parametrização de sexo, apenas intercepto e estimativa de coeficiente associado ao sexo são diferentes. Além disso, as variâncias de ambos os modelos permaneceram iguais.
 
 
 ```{r}
@@ -123,7 +145,34 @@ Similar a situação anterior, quando comparamos as estimativas do modelo estima
 lmeREML2=lme(fixed= distance~age + Sex, random=~ 1 |Subject, method="REML",data=data,
              contrasts = list(Sex = "contr.sum")) 
 
-summary(lmeREML2)
+lmeREML2
+
+
+```
+
+É importante destacar que, independente da parametrização, a relação entre os fatores da variável sexo se mantém. 
+
+Quando se usa casela de referência, o fator referência é o masculino e o coeficiente traz informação que, o fato de ser menina diminui a estimativa de tamanho da glândula em `r round(lmeML1$coefficients$fixed[3], 2) `.
+
+Na utilização do contraste da soma, multiplicamos o coeficiente pela representação do sexo. No caso masculino a representação é '1' e no caso feminino a representação é '-1'. O valor do coeficiente é `r round(lmeML2$coefficients$fixed[3], 2) ` (positivo). Isto significa que a estimativa de tamanho da glândula para meninos é 1\*`r round(lmeML2$coefficients$fixed[3], 2) ` e para meninas é -1\*`r round(lmeML2$coefficients$fixed[3], 2) `. 
+
+Portanto, em ambas as parametrizações, se interpreta que o sexo masculino influencia positivamente no tamanho da glândula.
+
+
+
+```{r}
+
+
+comparando_modelos2 <- rbind(lmeML1$coefficients$fixed, lmeML2$coefficients$fixed, lmeREML1$coefficients$fixed, lmeREML2$coefficients$fixed) %>% 
+  cbind(rbind(as.numeric(VarCorr(lmeML1)[,2]), as.numeric(VarCorr(lmeML2)[,2]), as.numeric(VarCorr(lmeREML1)[,2]), as.numeric(VarCorr(lmeREML2)[,2]))) %>% 
+  as.data.frame()
+
+names(comparando_modelos2) <- c("Intercepto", "Idade", "Sexo", "$\\hat{\\sigma}$", "$\\hat{\\sigma_d}$")
+
+row.names(comparando_modelos2) <- c("lmeML1", "lmeML2", "lmeREML1", "lmeREML2")
+
+
+kable(comparando_modelos2)
 
 
 ```
@@ -136,6 +185,19 @@ Considerando valores próximos as estimativas de ML para os parâmetros fixos e 
 
 **Resposta:**
 
+Para gerar a variável resposta simulada definimos os seguintes parâmetros:
+
+* Intercepto: 17
+* Sexo: -2.5
+* Idade: 0.6
+* desvio padrão dos resíduos: 1.45
+* desvio padrão do efeito aleatório: 1,85
+
+
+##### Simulação para 54 indivívuos
+
+Vemos que as variáveis y (tamanho da glândula), intercepto e idade são numéricas, entquanto que sexo é uma variável categórica com dois fatores e sujeiro outr variável categórica com 54 fatores.
+O número total de linhas é 216 que representam os 54 indivíduos em cada uma das 4 idades observadas. 
 
 ```{r}
 age = 0.6
@@ -143,9 +205,11 @@ sex = -2.5
 intercepto = 17
 sigmab = 1.85^2 #o summary solta o desvio padrão
 sigma = 1.45^2
+
 set.seed(2109)
+
 #Para 32 meninos e 22 meninas
-head(data)
+#head(data)
 X = model.matrix(~age + Sex, data)
 X2 = rbind(X,X) #Dobrei a matrix X
 beta1 = c(intercepto, age, sex)
@@ -154,16 +218,26 @@ Zi = matrix(1,4,1) #matriz dos efeitos aletorios de cada individuo i (são iguai
 #para todo i)
 Vi = sigma*(diag(4)) + sigmab*(Zi%*%(t(Zi))) # Matriz de variância para indiv i
 V = kronecker(diag(27*2), Vi) #matriz de variancia geral, essa multiplicação
+
 #cria uma matriz quadrada em que cada elemento da diagonal é Vi
 library(MASS)
 y = mvrnorm(1, muv, V) #simulando da normal multivariada
 individuo = rep(seq(1:54),each = 4) #gerando o indice dos individuos
 datasim2 = data.frame(cbind(y, X2, individuo))
-head(datasim2)
 names(datasim2) = c("y","Intercept", "age", "Sex","Subject")
-table(datasim2$Sex)/4 # 4 coletas por indivíduo
 
+datasim2$Sex <- as.factor(datasim2$Sex)
+datasim2$Subject <- as.factor(datasim2$Subject)
+
+str(datasim2)
+
+# table(datasim2$Sex)/4 # 4 coletas por indivíduo
 ```
+
+##### Simulação para 129 indivívuos
+
+Todas as catacterísticas observadas anteriormente se mantêm nesta simulação.
+O número total de linhas é 512 que representam os 129 indivíduos em cada uma das 4 idades observadas.
 
 ```{r}
 #Para 96 meninos e 32 meninas
@@ -171,10 +245,8 @@ table(datasim2$Sex)/4 # 4 coletas por indivíduo
 X = model.matrix(~age + Sex, data)
 Xmale = X[X[,3] == 0,]
 Xmale = matrix(rep(t(Xmale), 6), ncol = ncol(Xmale), byrow = TRUE)
-nrow(Xmale)/4
 Xfemale = X[X[,3] == 1,]
 Xfemale = matrix(rep(t(Xfemale), 3), ncol = ncol(Xfemale), byrow = TRUE)
-nrow(Xfemale)/4
 
 X3 = rbind(Xmale, Xfemale)
 beta1 = c(intercepto, age, sex)
@@ -183,12 +255,16 @@ Zi = matrix(1,4,1)
 Z = kronecker(diag(129), Zi)
 Vi = sigma*(diag(4)) + sigmab*(Zi%*%(t(Zi)))
 V = kronecker(diag(129), Vi)
-library(MASS)
 y = mvrnorm(1, muv, V)
 individuo = rep(seq(1:129),each = 4)
 datasim3 = data.frame(cbind(y, X3, individuo))
-head(datasim3)
 names(datasim3) = c("y","Intercept", "age", "Sex","Subject")
+
+datasim3$Sex <- as.factor(datasim3$Sex)
+datasim3$Subject <- as.factor(datasim3$Subject)
+
+str(datasim3)
+
 ```
 
 
@@ -198,34 +274,54 @@ Realize o solicitado nos itens anteriores para a nova base.
 
 **Resposta:**
 
-### Base simulada 1: 32 meninos e 22 meninas.
+##### Base simulada 1: 32 meninos e 22 meninas.
+
+Ajuste do modelo pelo método da máxima verossimilhança com dados de 54 crianças.
 
 ```{r}
 lmeML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim2) 
 lmeML_sim1
 
-lmeREML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim2) 
-lmeREML_sim1
 ```
 
+Ajuste do modelo pelo método da máxima verossimilhança restrita com dados de 54 crianças.
+
+
+```{r}
+
+lmeREML_sim1=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim2) 
+lmeREML_sim1
+
+```
 
 ### Base simulada 2: 96 meninos e 33 meninas.
+
+Ajuste do modelo pelo método da máxima verossimilhança com dados de 129 crianças.
 
 ```{r}
 lmeML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="ML",data=datasim3) 
 lmeML_sim2
 
+```
+
+Ajuste do modelo pelo método da máxima verossimilhança restrita com dados de 129 crianças.
+
+```{r}
 
 lmeREML_sim2=lme(fixed= y~age + Sex, random=~ 1 |Subject, method="REML",data=datasim3) 
 lmeREML_sim2
+
 ```
+
 
 
 ## Exercício 5
 
-Compare os resultados
+Compare os resultados.
 
 **Resposta:**
+
+
 ```{r include=FALSE}
 # Extrai informação do modelo
 extrai_estimativas = function(modelo) {
@@ -261,4 +357,8 @@ kable(tabela_estimativas, escape = FALSE, booktabs = TRUE, linesep = "")
 
 ```
 
-Pela tabela acima percebe-se que as estimativas dos efeitos fixos permanecem iguais quando ajustado no mesmo banco de dados, independente se foi utilizado o método de Maxíma verossimilhança ou máxima verossimilhança restrita. A principal diferença entre os métodos se encontra nas estimativas dos desvios padrão, em que o método de máxima verossimilhança subestima $\sigma$. Utilizando um banco de dados maior, que são as bases simuladas, vemos que a diferença entre os desvios é menor, o que leva a considerar que não existe diferença entre os métodos para uma amostra suficientemente grande.
+Pela tabela acima percebe-se que as estimativas dos efeitos fixos permanecem iguais quando ajustado no mesmo banco de dados, independente se foi utilizado o método de Maxíma verossimilhança ou máxima verossimilhança restrita. 
+
+A principal diferença entre os métodos se encontra nas estimativas dos desvios padrão, em que o método de máxima verossimilhança subestima $\sigma$. 
+
+Utilizando um banco de dados maior, que são as bases simuladas, vemos que a diferença entre os desvios é menor, o que leva a considerar que não existe diferença entre os métodos para uma amostra suficientemente grande.
