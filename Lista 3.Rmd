@@ -1,5 +1,73 @@
+---
+title: ""
+author: ""
+date: ""
+output:
+ pdf_document:
+     extra_dependencies: ["bm"]
+---
+## Exercício 1
+
+Considere um modelo balanceado com intercepto aleatório obtenha a estimativa de
+máxima verossimilhança da componente d.
+
+**Resposta:**
+
+O modelo balanceado com intercepto aleatório em notação matricial pode ser excrito como:
+\[\bm{y_{i}} = \bm{X \beta + \bm{1_n} b_i + \varepsilon_i}, \quad i=1, 2, \dots, N,\]
+onde 
+
+- $\bm{y_i}$ é um vetor $n \times 1$ de variáveis respostas para o i-ésimo sujeito.
+- $\bm{X}$ é uma matriz $n \times m$ de variáveis explicativas.
+- $\bm{\beta}$ é um vetor $m \times 1$ de efeitos fixos.
+- $\bm{\varepsilon_i}$ é um vetor $n \times 1$ de erros independentes, e assume-se que $\bm{\varepsilon_i} \sim N(0, \sigma^2 I_n).$
+- $b_i$ é o efeito aleatório, e assume-se que $b_i \sim N(0, \sigma^2 d).$
+- $\bm{1_n}$ é um vetor unitário de dimensão $n \times 1.$
+- $\sigma^2$ é a variância dentro do sujeito e $d$ é a variância escalada do efeito aleatório.
+ 
+O modelo também pode ser escrito como
+\[\bm{y_{i}} \sim N(\bm{X \beta}, \sigma^2 (\bm{I_n} + d \bm{1_n 1_n'})), \quad i=1, 2, \dots, N.\]
+
+A log-verossimilhança do modelo, ignorando a constante é
+\[\ell(\bm{\theta}) = -\frac{1}{2}\left \{ Nn \log(\sigma^2) + \sum_{i=1}^N \log |\bm{I_n} + d \bm{1_n 1_n'}| + \sigma^{-2} \sum_{i=1}^N \bm{e_i'} (\bm{I_n} + d \bm{1_n 1_n'})^{-1} \bm{e_i}   \right \},\]
+onde $\bm{e_i} = \bm{y_i - X \beta}.$
+
+Utilizando as fórmulas da redução de dimensão, temos que:
+\[\begin{split}
+(\bm{I_n} + d \bm{1_n 1_n'})^{-1} &= \bm{I_n} - \bm{1_n} \left ( \frac{1}{d} + \bm{ 1_n' 1_n} \right)^{-1} \bm{1_n'} \\
+ &= \bm{I_n} - \bm{1_n} \left ( \frac{1}{d} + n \right)^{-1} \bm{1_n'} \\
+ &= \bm{I_n} - \frac{d}{1 + nd} \bm{1_n} \bm{1_n'}.\\
+\end{split}\]
+
+\[|\bm{I_n} + d \bm{1_n 1_n'}| = |1 + dn| = 1 + dn.\]
+Assim, a log-verossimilhança fica
+\[\begin{split}
+\ell(\bm{\theta}) &= -\frac{1}{2}\left \{ Nn \log(\sigma^2) + \sum_{i=1}^N \log (1 + dn) + \sigma^{-2} \sum_{i=1}^N \bm{e_i'} \left(\bm{I_n} - \frac{d}{1 + nd} \bm{1_n} \bm{1_n'} \right ) \bm{e_i}   \right \}\\
+ &= -\frac{1}{2}\left \{ Nn \log(\sigma^2) + N \log (1 + dn) + \sigma^{-2} \sum_{i=1}^N \left[\bm{e_i' e_i} - \frac{d}{1 + nd} \bm{e_i' 1_n 1_n' e_i} \right]   \right \} \\
+  &= -\frac{1}{2}\left \{ Nn \log(\sigma^2) + N \log (1 + dn) + \sigma^{-2} \sum_{i=1}^N \left[\bm{e_i' e_i} - \frac{d}{1 + nd} (\bm{e_i' 1_n})^2 \right]   \right \}.
+\end{split}\]
+
+A derivada parcial da log-verossimilhança em relação a $d$ é:
+\[\frac{\partial \ell(\bm{\theta})}{ \partial d}  = -\frac{1}{2} \left \{\frac{Nn(1 + dn) \sigma^2 - \sum_{i=1}^N (\bm{e_i' 1_n})^2}{\sigma^2 (1 + dn)^2} \right \}.\]
+A derivada acima é igual a zero quando
+\[d = \frac{\sum_{i=1}^N (\bm{e_i' 1_n})^2 - Nn\sigma^2}{\sigma^2 N n^2} = \frac{\sum_{i=1}^N (\bm{e_i' 1_n})^2}{\sigma^2 N n^2} - \frac{1}{n},\]
+assim a estimativa de máxima verossimilhança da componente $d$ é:
+\[\hat d_{ML} =  \frac{\sum_{i=1}^N (\bm{\hat e_i' 1_n})^2}{\hat \sigma^2_{ML} N n^2} - \frac{1}{n},\]
+onde $\bm{\hat e_i = y_i - X \hat \beta_{ML}},$ e segundo Demidenko (2013), para dados balanceados $\hat \beta_{ML} = \hat \beta_{OLS} = \bm{(X' X)^{-1} X' \overline y},$ assim, o termo $\bm{\hat e_i' 1_n}$ pode ser escrito como
+\[\begin{split}
+\bm{ \hat e_i' 1_n} &=  \bm{(y_i - X \hat \beta_{OLS})' 1_n} \\
+&=  \bm{(y_i - X (X' X)^{-1} X' \overline y)' 1_n} \\
+&=  \bm{y_i' 1_n - \overline y' X (X'X)^{-1} X' 1_n} \\
+&=  \bm{ y_i' 1_n - \overline y' 1_n} \\
+&= n  (\overline y_i - \bar {\bar y}),
+\end{split}\]
+onde $\bar {\bar y} = \bm{\overline y' 1_n} / n,$ $\overline y_i = \bm{y_i' 1_n}/n,$ e a prova de que $\bm{X (X'X)^{-1} X' 1_n = 1_n}$ se encontra em (Demidenko 2013, p.68).
+
+Portanto, a estimativa de máxima verossimilhança da componente d em um modelo balanceado com intercepto aleatório é
+\[\hat d_{ML} =  \frac{\sum_{i=1}^N (\overline y_i - \bar {\bar y})^2}{\hat \sigma^2_{ML} N} - \frac{1}{n},\]
 
 
+\pagebreak
 
 ```{r}
 
@@ -69,7 +137,7 @@ Também é importante destacar que ao considerar os ninhos como efeitos fixos, g
 Owls %>% group_by(Nest) %>%
   summarise(contagem = n()) %>%
   arrange(contagem) %>%
-  kable(row.names = F, align = "center")
+  kable(row.names = F, align = "c")
 
 ```
 
