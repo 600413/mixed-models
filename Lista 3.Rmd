@@ -1,10 +1,12 @@
 ---
-title: ""
-author: ""
-date: ""
+title: ''
+author: ''
+date: ''
 output:
- pdf_document:
-     extra_dependencies: ["bm"]
+  pdf_document:
+    extra_dependencies: bm
+  html_document:
+    df_print: paged
 ---
 ## Exercício 1
 
@@ -67,6 +69,32 @@ Portanto, a estimativa de máxima verossimilhança da componente d em um modelo 
 \[\hat d_{ML} =  \frac{\sum_{i=1}^N (\overline y_i - \bar {\bar y})^2}{\hat \sigma^2_{ML} N} - \frac{1}{n},\]
 
 
+\pagebreak
+
+## Exercício 2
+
+Mostre que o termo do log-verossimilhança restrita 
+
+$$f(N) = -\frac{1}{2}(-m \ln \sigma^2 + \ln |\sum_{i = 1}^N X_i'V_iX_i|)$$
+é de ordem de $\ln N$. Considere: $n_i = n$, $X_i$ e $Z_i = Z$.
+
+**Resposta:**
+
+Queremos mostrar que $\frac{f(N)}{\ln N} < M$, com $M \in \mathbb{R}$ e $\forall N > N_0$.
+
+Temos que
+
+$$\ln |\sum_{i = 1}^N X_i'V_iX_i| = \ln |\frac{N}{N}\sum_{i = 1}^N X_i'V_iX_i| = \ln(N^m |\frac{1}{N}\sum_{i = 1}^N X_i' V_i X_i|) = \ln |\frac{N}{N}X'VX| + m\ln N$$
+
+Logo,
+
+$$f(N) = -\frac{1}{2}(-m \ln \sigma^2 + \ln |X'VX| + m\ln N)$$
+
+só depende de $\ln N$ quando $\lim_{N \rightarrow \infty}$. Logo a seguinte inequação é válida pois existe um $M$ real tal que 
+
+$$\frac{-\frac{1}{2}(-m \ln \sigma^2 + \ln |X'VX| + m\ln N)}{\ln N} < M$$
+
+para todo $N > N_0$.
 \pagebreak
 
 ```{r}
