@@ -98,21 +98,6 @@ $$\frac{-\frac{1}{2}(-m \ln \sigma^2 + \ln |X'VX| + m\ln N)}{\ln N} < M$$
 para todo $N > N_0$.
 \pagebreak
 
-```{r, warning=F, message=F,echo=F}
-
-## importando os pacotes
-library(glmmTMB)
-library(tidyverse)
-library(knitr)
-library(ggplot2)
-library(nlme)
-
-## importando os dados
-data(Owls, package = "glmmTMB")
-
-```
-
-
 ## Exercício 3
 
 Um estudo com filhotes de coruja foi conduzido com câmeras e microfones para 
@@ -135,6 +120,20 @@ b) Descreva o modelo formalmente especificando as matrizes associadas aos efeito
 fixos e aleatórios. 
 
 c) Realize as interpretações que pertinentes. 
+
+```{r, warning=F, message=F,echo=F}
+
+## importando os pacotes
+library(glmmTMB)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(nlme)
+
+## importando os dados
+data(Owls, package = "glmmTMB")
+
+```
 
 ### item a)
 
