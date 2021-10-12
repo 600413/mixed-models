@@ -177,7 +177,10 @@ Abaixo fica claro que a distribuição do log das negociações entre irmãos va
 ```{r, warning=F, message=F, echo=F}
 
 ggplot(Owls) +
-  geom_boxplot(aes(x = Nest, y = LogNeg), color = 'blue', fill = 'gray') +
+  geom_boxplot(aes(x = Nest, y = LogNeg), 
+               fill = '#D3D3D3', 
+               color = '#00d7af', 
+               size = 1) +
   coord_flip() + theme_classic() + 
   ggtitle('Distribuição da negociação entre irmãos por ninho') +
   theme(plot.title = element_text(hjust = 0.5))
@@ -197,7 +200,10 @@ No gráfico de abaixo vemos que a distribuição do log da taxa de negociação 
 ```{r, message=F, warning=F, echo=F}
 
 ggplot(Owls) +
-  geom_boxplot(aes(x = FoodTreatment, y = LogNeg), fill = 'gray', color = 'blue') +
+  geom_boxplot(aes(x = FoodTreatment, y = LogNeg), 
+               fill = '#D3D3D3', 
+               color = '#00d7af', 
+               size = 1) +
   theme_classic() +
   ggtitle('Distribuição da negociação entre irmãos\n por tratamento alimentar') +
   theme(plot.title = element_text(hjust = 0.5))
@@ -210,7 +216,10 @@ Avaliando agora o sexo dos pais, pela análise gráfica não identificamos difer
 ```{r, message=F, warning=F, echo=F}
 
 ggplot(Owls) +
-  geom_boxplot(aes(x = SexParent, y = LogNeg), fill = 'gray', color = 'blue') +
+  geom_boxplot(aes(x = SexParent, y = LogNeg), 
+               fill = '#D3D3D3', 
+               color = '#00d7af', 
+               size = 1) +
   theme_classic() +
   ggtitle('Distribuição da negociação entre irmãos\n por sexo do pai') +
   theme(plot.title = element_text(hjust = 0.5))
@@ -225,7 +234,10 @@ Visualizando as duas variáveis simultaneamente não encontramos evidência de i
 ```{r, message=F, warning=F, echo=F}
 
 ggplot(Owls) +
-  geom_boxplot(aes(x = SexParent, y = LogNeg), fill = 'gray', color = 'blue') +
+  geom_boxplot(aes(x = SexParent, y = LogNeg), 
+               fill = '#D3D3D3', 
+               color = '#00d7af', 
+               size = 1) +
   theme_classic() + facet_grid(~FoodTreatment) +
   ggtitle('Distribuição da negociação entre irmãos') +
   theme(plot.title = element_text(hjust = 0.5))
@@ -237,7 +249,7 @@ Outra variável explicativa disponível é o tempo de chegada que aparentemente 
 ```{r, message=F, warning=F, echo=F}
 
 ggplot(Owls) +
-  geom_point(aes(x = ArrivalTime, y = LogNeg), color = 'blue') +
+  geom_point(aes(x = ArrivalTime, y = LogNeg), color = '#00d7af', size = 3) +
   theme_classic() + ggtitle('Tempo de chegada por negociação entre irmãos') +
   theme(plot.title = element_text(hjust  = 0.5))
 
@@ -250,7 +262,10 @@ Owls %>%
   group_by(Nest) %>%
   summarise(correlacao = cor(ArrivalTime, LogNeg)) %>%
   ggplot() +
-  geom_col(aes(x = Nest, y = correlacao), fill = 'gray', color = 'blue') +
+  geom_col(aes(x = Nest, y = correlacao), 
+           fill = '#D3D3D3', 
+               color = '#00d7af', 
+               size = 1) +
   theme_classic() +
   coord_flip() + ggtitle('Correlação entre negocialçao entre irmãos e \ntempo de chegada por ninho') + theme(plot.title = element_text(hjust = 0.5))
 
@@ -262,7 +277,10 @@ Procurando interação entre as variáveis, avaliamos o tempo de chegada por tra
 ```{r, message=F, warning=F, echo=F}
 
 ggplot(Owls) + 
-  geom_boxplot(aes(x = SexParent, y = ArrivalTime), fill = 'gray', color = 'blue') +
+  geom_boxplot(aes(x = SexParent, y = ArrivalTime), 
+               fill = '#D3D3D3', 
+               color = '#00d7af', 
+               size = 1) +
   facet_grid(~FoodTreatment) + theme_classic()
 
 ```
@@ -287,9 +305,15 @@ Então ajustamos dois modelos semelhantes (pelo método da verossimilhança), um
 
 ```{r, message=F, warning=F}
 
-com_SexParent <- lme(LogNeg~SexParent+FoodTreatment+ArrivalTime, random= ~1| Nest, method = "ML", data = Owls)
+com_SexParent <- lme(LogNeg~SexParent+FoodTreatment+ArrivalTime, 
+                     random= ~1| Nest, 
+                     method = "ML", 
+                     data = Owls)
 
-sem_SexParent <- lme(LogNeg~FoodTreatment+ArrivalTime, random= ~1| Nest, method = "ML", data = Owls)
+sem_SexParent <- lme(LogNeg~FoodTreatment+ArrivalTime, 
+                     random= ~1| Nest, 
+                     method = "ML", 
+                     data = Owls)
 
 anova(sem_SexParent, com_SexParent)
 
@@ -379,6 +403,7 @@ $$
 \epsilon_N
 \end{bmatrix} 
 $$
+
 Vetor de erros de dimensão Nx1.
 
 $$ b \sim N(0, \sigma^2D) $$ e $$ \epsilon \sim N(0, \sigma^2I) $$
@@ -419,8 +444,12 @@ Como temos duas variáveis explicativas e 4 observações para este sujeito e ma
 
 ```{r, message=F, warning=F, echo=F}
 
-rs1 <- reStruct(LogNeg~FoodTreatment+ArrivalTime, data = Owls)
-model.matrix(rs1, Owls)[158:161,] %>%
+#rs1 <- reStruct(LogNeg~FoodTreatment+ArrivalTime, data = Owls)
+#model.matrix(rs1, data = Owls)[158:161,]
+
+Owls_Forel %>% mutate(intercepto = c(1,1,1,1),
+                                  FoodTreatmentSatiated = ifelse(FoodTreatment == 'Satiated', 1, 0)) %>% 
+  select(intercepto, FoodTreatmentSatiated, ArrivalTime) %>%
   kable(row.names = F)
 
 ```
