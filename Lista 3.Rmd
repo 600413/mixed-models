@@ -97,7 +97,7 @@ $$\frac{-\frac{1}{2}(-m \ln \sigma^2 + \ln |X'VX| + m\ln N)}{\ln N} < M$$
 para todo $N > N_0$.
 \pagebreak
 
-```{r}
+```{r, warning=F, message=F,echo=F}
 
 ## importando os pacotes
 library(glmmTMB)
@@ -143,10 +143,8 @@ Ao todo temos `r nrow(Owls) ` observações de `r length(unique(Owls$Nest)) ` ni
 
 A característica de interesse do estudo é o número de negociação entre irmãos. 
 
-Como o número de filhotes de cada ninhada é diferente, para conseguirmos comparar as negociações entre ninhadas, dividimos o número de negociações observadas no intervalo de tempo pelo número total de filhotes do ninho. Além disso, conforme instrução do enuncuado, transformamos a variável resposta NegPerChick (negociações por filhote) adicionando 1 e aplicando logaritmo de base 10.
+Como o número de filhotes de cada ninhada é diferente, para conseguirmos comparar as negociações entre ninhadas, dividimos o número de negociações observadas no intervalo de tempo pelo número total de filhotes do ninho. Além disso, conforme instrução do enunciado, transformamos a variável resposta NegPerChick (negociações por filhote) adicionando 1 e aplicando logaritmo de base 10 com objetivo de normalizar os dados e usar um modelo linear padrão.
 
-
-$ LogNeg = log(NegPerChick + 1) $ 
 
 ```{r, warning=F, message=F, echo=F}
 
@@ -154,11 +152,8 @@ Owls$LogNeg <- log10(Owls$NegPerChick+1)
 
 ```
 
-Vemos que cada ninho tem pelo menos 4 observações, desta forma concluimos que os sujeitos não são independentes e portanto, é interessante mensurar a correlação entre as observações do mesmo ninho. 
+Vemos que cada ninho tem pelo menos 4 observações, desta forma concluimos que as observações não são independentes e portanto, é interessante mensurar a correlação das observações de cada sujeito. 
 
-Além disso, os ninhos estudados são uma amostra de todos os ninhos existentes podemos generalizar o modelo para que ele seja capaz de descrever outros ninhos fora da amostra. 
-
-Também é importante destacar que ao considerar os ninhos como efeitos fixos, gastaríamos muitos graus de liberdade.
 
 ```{r, warning=FALSE, message=F, echo=F}
 
@@ -168,6 +163,12 @@ Owls %>% group_by(Nest) %>%
   kable(row.names = F, align = "c")
 
 ```
+
+
+Além disso, como os ninhos estudados são uma amostra de todos os ninhos existentes, podemos estar interessados em generalizar o modelo para que ele seja capaz de descrever outros ninhos fora da amostra. 
+
+Também é importante destacar que ao considerar os ninhos como efeitos fixos, gastaríamos muitos graus de liberdade.
+
 
 **Variável resposta**
 
@@ -237,7 +238,8 @@ Outra variáves explicativa disponível é o tempo de chegada que aparentemente 
 
 ggplot(Owls) +
   geom_point(aes(x = ArrivalTime, y = LogNeg), color = 'blue') +
-  theme_classic()
+  theme_classic() + ggtitle('Tempo de chegada por negociação entre irmãos') +
+  theme(plot.title = element_text(hjust  = 0.5))
 
 ```
 
@@ -254,7 +256,7 @@ Owls %>%
 
 ```
 
-Procurando interação entre as variáveis, avaliamos o tempo de chegada por tratamento alimentar e sexo dos pais e não encontramos evidências gráficas de interação. 
+Procurando interação entre as variáveis, avaliamos o tempo de chegada por tratamento alimentar e sexo dos pais e não encontramos evidências gráficas de interação. O tempo de chegada mostra mediana e dispersão parecida para ambos os sexos assim como para os dois tratamentos alimentares.
 
 
 ```{r, message=F, warning=F, echo=F}
@@ -268,17 +270,19 @@ ggplot(Owls) +
 
 #### Ajuste do modelo
 
-Após ajustar o modelo, vemos que a variável *SexParent* não é sifnificativa.
+Conforme evidência da análise descritiva, após ajustar o modelo, vemos que a variável *SexParent* não é sifnificativa.
 
 ```{r, message=F, warning=F}
 
 negociacao <- lme(LogNeg~SexParent+FoodTreatment+ArrivalTime, random= ~1| Nest, data = Owls)
-summary(negociacao)
+negociacao
 
 ```
 
 
-Outro teste que mostra que a variável sexo dos pais pode ser removida sem prejuízo para o modelo é o teste de verossimilhança, porém, para usá-lo precisamos que o método de estimativa dos parâmetros seja máxima verossimilhança.
+Outro teste que pode ser feito para verificar a necessidade de inserir a variável *SexParent* no modelo é o teste de verossimilhança, porém, para usá-lo precisamos que o método de estimativa dos parâmetros seja máxima verossimilhança.
+
+Então ajustamos dois modelos semelhantes (pelo método da verossimilhança), um deles com as variáveis *SexParent*, *FoodTreatment* e *ArrivalTime* e outro apenas com *FoodTreatment* e *ArrivalTime* e aplicamos o teste da razão de verossimilhança por meio do comando *anova*. Conforme o esperado, o resultado obtido foi que a variável *SexParent* não melhora o ajuste e pode ser desconsiderado do modelo.
 
 
 ```{r, message=F, warning=F}
@@ -287,7 +291,7 @@ com_SexParent <- lme(LogNeg~SexParent+FoodTreatment+ArrivalTime, random= ~1| Nes
 
 sem_SexParent <- lme(LogNeg~FoodTreatment+ArrivalTime, random= ~1| Nest, method = "ML", data = Owls)
 
-anova(com_SexParent, sem_SexParent)
+anova(sem_SexParent, com_SexParent)
 
 ```
 
@@ -303,13 +307,139 @@ sem_SexParent
 
 ```
 
+
+
 ### item b)
+
+Definimos um modelo 
+
+$ y = X\beta + Zb + \epsilon $
+
+onde 
+
+$$ 
+y = \begin{bmatrix}
+y_1\\
+\vdots \\
+y_N
+\end{bmatrix} 
+$$
+Vetor coluna de variável resposta de dimensão Nx1.
+N = total das observações.
+
+$ N = \sum_{i=1}^{27} n_i $
+
+
+$$ 
+X = \begin{bmatrix}
+X_1\\
+\vdots \\
+X_N
+\end{bmatrix} 
+$$
+
+Matrix design dos efeitos fixos do modelo (*FoodTreatment*, *ArrivalTime*) com dimensão Nx2.
+
+
+$$ 
+\beta = \begin{bmatrix}
+\beta_1\\
+\vdots \\
+\beta_N
+\end{bmatrix} 
+$$
+
+Vetor dos parâmetros populacionais de dimensão 2x1.
+
+
+$$ 
+Z = \begin{bmatrix}
+Z_1 & 0 & \dots& 0\\
+\vdots & \vdots & \ddots & \vdots\\
+0 & 0 & \dots & Z_N
+\end{bmatrix} 
+$$
+
+Matriz desing dos efeitos aleatórios de dimensão Zxk.
+
+$$ 
+b = \begin{bmatrix}
+b_1\\
+\vdots \\
+b_N
+\end{bmatrix} 
+$$
+
+Vetor de parâmetros dos efeitos aleatórios de dimensão kx1.
+
+
+$$ 
+\epsilon = \begin{bmatrix}
+\epsilon_1\\
+\vdots \\
+\epsilon_N
+\end{bmatrix} 
+$$
+Vetor de erros de dimensão Nx1.
+
+$$
+
+
+
+$$
+
+
+Um exemplo do modelo nos dados das corujas, para o ninho *Forel* segue abaixo.
+
+```{r, message=F, warning=F}
+
+Owls_Forel <- Owls %>% filter(Nest == 'Forel')
+
+```
+
+
+$$ 
+y = \begin{bmatrix}
+Owls_Forel$LogNeg[1]\\
+Owls_Forel$LogNeg[2] \\
+Owls_Forel$LogNeg[3] \\
+Owls_Forel$LogNeg[4]
+\end{bmatrix} 
+$$
+
+
+```{r}
+
+knit()
+
+```
+
+
+
+
+
+
+b) Descreva o modelo formalmente especificando as matrizes associadas aos efeitos 
+fixos e aleatórios. 
+
+c) Realize as interpretações que pertinentes. 
 
 
 ### item c)
 
 
+rs1 <- reStruct(list(Dog = ~day, Side = ~1), data = Pixel)
+model.matrix(rs1, Pixel)
 
+
+```{r}
+
+Form <- 'LogNeg~FoodTreatment+ArrivalTime'
+
+rs1 <- reStruct(LogNeg~FoodTreatment+ArrivalTime, data = Owls)
+model.matrix(rs1, Owls)
+
+```
 
 
 
