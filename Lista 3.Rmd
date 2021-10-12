@@ -8,6 +8,7 @@ output:
   html_document:
     df_print: paged
 ---
+
 ## Exercício 1
 
 Considere um modelo balanceado com intercepto aleatório obtenha a estimativa de
@@ -232,7 +233,7 @@ ggplot(Owls) +
 
 ```
 
-Outra variáves explicativa disponível é o tempo de chegada que aparentemente não tem correlação com a variável resposta. Porém, se avaliarmos a correlação entre essas variáveis para cada um dos ninhos, vemos que o cenário muda.
+Outra variável explicativa disponível é o tempo de chegada que aparentemente não tem correlação com a variável resposta. Porém, se avaliarmos a correlação entre essas variáveis para cada um dos ninhos, vemos que o cenário muda.
 
 ```{r, message=F, warning=F, echo=F}
 
@@ -275,14 +276,14 @@ Conforme evidência da análise descritiva, após ajustar o modelo, vemos que a 
 ```{r, message=F, warning=F}
 
 negociacao <- lme(LogNeg~SexParent+FoodTreatment+ArrivalTime, random= ~1| Nest, data = Owls)
-negociacao
+summary(negociacao)
 
 ```
 
 
 Outro teste que pode ser feito para verificar a necessidade de inserir a variável *SexParent* no modelo é o teste de verossimilhança, porém, para usá-lo precisamos que o método de estimativa dos parâmetros seja máxima verossimilhança.
 
-Então ajustamos dois modelos semelhantes (pelo método da verossimilhança), um deles com as variáveis *SexParent*, *FoodTreatment* e *ArrivalTime* e outro apenas com *FoodTreatment* e *ArrivalTime* e aplicamos o teste da razão de verossimilhança por meio do comando *anova*. Conforme o esperado, o resultado obtido foi que a variável *SexParent* não melhora o ajuste e pode ser desconsiderado do modelo.
+Então ajustamos dois modelos semelhantes (pelo método da verossimilhança), um deles com as variáveis *SexParent*, *FoodTreatment* e *ArrivalTime* e outro apenas com *FoodTreatment* e *ArrivalTime* e aplicamos o teste da razão de verossimilhança por meio do comando *anova*. Conforme o esperado, o resultado obtido foi que a variável *SexParent* não melhora o ajuste e pode ser desconsiderada do modelo.
 
 
 ```{r, message=F, warning=F}
@@ -311,9 +312,9 @@ sem_SexParent
 
 ### item b)
 
-Definimos um modelo 
+O modelo escolhido no item anterior pode ser formalmente escrito conforme segue:
 
-$ y = X\beta + Zb + \epsilon $
+$$ y = X\beta + Zb + \epsilon $$
 
 onde 
 
@@ -327,7 +328,7 @@ $$
 Vetor coluna de variável resposta de dimensão Nx1.
 N = total das observações.
 
-$ N = \sum_{i=1}^{27} n_i $
+$$ N = \sum_{i=1}^{27} n_i = 599 $$
 
 
 $$ 
@@ -360,7 +361,7 @@ Z_1 & 0 & \dots& 0\\
 \end{bmatrix} 
 $$
 
-Matriz desing dos efeitos aleatórios de dimensão Zxk.
+Matriz desing dos efeitos aleatórios de dimensão Nx27.
 
 $$ 
 b = \begin{bmatrix}
@@ -370,8 +371,7 @@ b_N
 \end{bmatrix} 
 $$
 
-Vetor de parâmetros dos efeitos aleatórios de dimensão kx1.
-
+Vetor de parâmetros dos efeitos aleatórios de dimensão 27x1.
 
 $$ 
 \epsilon = \begin{bmatrix}
@@ -382,64 +382,97 @@ $$
 $$
 Vetor de erros de dimensão Nx1.
 
-$$
+$$ b \sim N(0, \sigma^2D) $$ e $$ \epsilon \sim N(0, \sigma^2I) $$
+
+Como estamos trabalhando com modelos mistos, podemos escrever um modelo para cada sujeito, no caso do exercício, um modelo para cada ninho. Para escrever o modelo com os dados do exercício, um dos menores ninhos, o **Forel** foi escolhido.
+
+$$ y_i = X_i\beta + Z_ib_i + \epsilon_i $$
+
+i = Forel
 
 
-
-$$
-
-
-Um exemplo do modelo nos dados das corujas, para o ninho *Forel* segue abaixo.
-
-```{r, message=F, warning=F}
+```{r, message=F, warning=F, echo=F}
 
 Owls_Forel <- Owls %>% filter(Nest == 'Forel')
 
-```
-
-
-$$ 
-y = \begin{bmatrix}
-Owls_Forel$LogNeg[1]\\
-Owls_Forel$LogNeg[2] \\
-Owls_Forel$LogNeg[3] \\
-Owls_Forel$LogNeg[4]
-\end{bmatrix} 
-$$
-
-
-```{r}
-
-knit()
+Owls_Forel %>% 
+  select(Nest, 
+         FoodTreatment, 
+         SexParent, 
+         ArrivalTime, 
+         LogNeg) %>%
+  kable(row.names = F)
 
 ```
 
+O vetor de respostas y tem dimensão 4x1
+
+```{r, message=F, warning=F, echo=F}
+
+Owls_Forel %>%
+  select(LogNeg) %>%
+  kable(row.names = F, col.names = '')
+
+```
+
+<br>
+Como temos duas variáveis explicativas e 4 observações para este sujeito e mantivemos o intercepto no modelo, a matriz X de design tem dimensão 4x3.
+
+```{r, message=F, warning=F, echo=F}
+
+rs1 <- reStruct(LogNeg~FoodTreatment+ArrivalTime, data = Owls)
+model.matrix(rs1, Owls)[158:161,] %>%
+  kable(row.names = F)
+
+```
+
+O vetor de parâmetros dos efeitos fixos tem dimensão 3x1.
+
+```{r, echo=F, message=F, warning=F}
+
+sem_SexParent$coefficients$fixed %>%
+  kable(col.names = '')
+
+```
+
+<br>
+No modelo escolhido, definimos o intercepto aleatório, então a matriz Z de efeitos aleatórios é uma matriz diagonal em blocos, onde temos 1 nas linhas e as colunas preenchidas são as colunas referentes ao ninho i, no caso *Forel*.
+
+```{r, message=F, echo=F, warning=F}
+
+c(1, 1, 1, 1) %>% kable(col.names = '')
+
+```
+
+<br>
+E, por fim, temos a estimativa do parâmetro de variância do efeito aleatório *Forel* ( $\sigma^2_b$ ).
 
 
+```{r, message=F, echo=F, warning=F}
 
+sem_SexParent$coefficients$random$Nest['Forel',] %>%
+  kable(col.names = '')
 
-
-b) Descreva o modelo formalmente especificando as matrizes associadas aos efeitos 
-fixos e aleatórios. 
-
-c) Realize as interpretações que pertinentes. 
-
+```
 
 ### item c)
 
-
-rs1 <- reStruct(list(Dog = ~day, Side = ~1), data = Pixel)
-model.matrix(rs1, Pixel)
+Estamos usando o modelo para entender o comportamento da taxa de negociação entre irmãos dadas algumas características observadas de cada ninho. São elas, o próprio ninho, o tratamento alimentar oferecido no momento da observção e o tempo de chegada dos pais.
 
 
-```{r}
 
-Form <- 'LogNeg~FoodTreatment+ArrivalTime'
+```{r, message=F, echo=F, warning=F}
 
-rs1 <- reStruct(LogNeg~FoodTreatment+ArrivalTime, data = Owls)
-model.matrix(rs1, Owls)
+sem_SexParent
 
 ```
+
+O intercepto do modelo nos diz que a taxa de negociação entre irmãos média, sabendo que o tratamento alimentar é *Deprived*, é `r sem_SexParent$coefficients$fixed[1] `.
+
+O tratamento alimentar *Satiated* reduz a taxa de negociação em `r sem_SexParent$coefficients$fixed[2]*(-1) `.
+
+E a cada unidade de tempo acrescida no valor médio de tempo de chegada, temos um descréscimo da taxa de negociação de `r sem_SexParent$coefficients$fixed[3]*(-1) `
+
 
 
 
