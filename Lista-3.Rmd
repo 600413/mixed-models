@@ -383,7 +383,7 @@ em que $D$ é uma matriz diagonal de dimensão $27 \times 27$. Como estamos trab
 
 $$ y_i = X_i\beta + Z_ib_i + \epsilon_i $$
 
-Para i = 1, temos duas variáveis explicativas e 4 observações para este sujeito e mantivemos o intercepto no modelo, a matriz X de design tem dimensão 4x3.
+Para i = 8, temos duas variáveis explicativas e 4 observações para este sujeito e mantivemos o intercepto no modelo, a matriz X de design tem dimensão 4x3.
 
 $$ 
 X_1 = \begin{bmatrix}
@@ -405,7 +405,7 @@ Owls_Forel %>%
   kable(row.names = F)
 ```
 
-O vetor de respostas $y_1^T = (0, 0.096, 0, 0)$
+O vetor de respostas $y_8^T = (0, 0.096, 0, 0)$
 
 ```{r, message=F, warning=F, echo=F}
 Owls_Forel %>%
@@ -433,7 +433,7 @@ sem_SexParent$coefficients$fixed %>%
 ```
 
 <br>
-No modelo escolhido, definimos o intercepto aleatório, então a matriz Z de efeitos aleatórios é uma matriz diagonal em blocos, onde temos 1 nas linhas e as colunas preenchidas são as colunas referentes ao ninho i, no caso *Forel* $i = 1$.
+No modelo escolhido, definimos o intercepto aleatório, então a matriz Z de efeitos aleatórios é uma matriz diagonal em blocos, onde temos 1 nas linhas e as colunas preenchidas são as colunas referentes ao ninho i, no caso *Forel* $i = 8$.
 
 $$ 
 Z_1 = \begin{bmatrix}
