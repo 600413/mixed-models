@@ -1,0 +1,47 @@
+---
+title: 'Lista 4'
+author: ''
+date: ''
+output:
+  pdf_document:
+    extra_dependencies: 
+  html_document:
+    df_print: paged
+---
+
+
+```{r}
+
+ParasiteCod <- read.csv('ParasiteCod.txt', sep = '\t')
+
+ParasiteCod$fArea <- factor(ParasiteCod$Area)
+ParasiteCod$fYear <- factor(ParasiteCod$Year)
+
+P12 <- glm(Prevalence ~  Length+fArea * fYear ,
+           family = binomial, data = ParasiteCod)
+summary(P12)
+
+
+```
+
+
+
+```{r}
+
+drop1(P12, test = "Chi")
+
+
+
+```
+
+
+```{r}
+anova(P12, test = "Chi")
+
+```
+
+
+
+
+
+
