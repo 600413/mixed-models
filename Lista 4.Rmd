@@ -245,7 +245,7 @@ em que $X$ é uma matriz de dimensão $n\times p$ com as covariáveis e $\beta$ 
 
 \item $\exp(0.383756)$ = 1.46778, a chance de prevalência do parasita no ano de 2000 aumenta em 46\% em relação ao ano de 1999 para a área 1.
 
-\item $\exp(-0.209035)$ = 0.81136, a chance de prevalência do parasita na área 2 é 19\% menor do que na área 1 em relação ao ano de 2000, mas a chance de prevalência do parasita na área 2 é 124\% ($\exp(2.595866) = 13.4$) maior que na área 1 em relação ao ano de 2001. O que concluímos que claramente a área tem um efeito diferente na prevalência dependendo do ano selecionado.
+\item $\exp(-0.209035)$ = 0.81136, a chance de prevalência do parasita na área 2 é 19\% menor do que na área 1 em relação ao ano de 2000, mas a chance de prevalência do parasita na área 2 é 1240\% ($\exp(2.595866) = 13.4$) maior que na área 1 em relação ao ano de 2001. O que concluímos que claramente a área tem um efeito diferente na prevalência dependendo do ano selecionado.
 \end{itemize}
 
 
