@@ -12,10 +12,121 @@ output:
 
 ```{r}
 
+library(tidyverse)
+library(ggplot2) 
+library(knitr)
+
+```
+
+
+
+```{r}
+
 ParasiteCod <- read.csv('ParasiteCod.txt', sep = '\t')
 
 ParasiteCod$fArea <- factor(ParasiteCod$Area)
 ParasiteCod$fYear <- factor(ParasiteCod$Year)
+ParasiteCod$Prevalence <- factor(ParasiteCod$Prevalence)
+
+```
+
+O modelo entregue para análise utiliza as variáveis *Length*, *Area* e *Year* para explicar a prevalência do parasita.
+
+Através do gráfico abaixo vemos que a distribuição da variável *Length* é parecida em casos com e sem prevalência do parasita.
+
+
+```{r}
+
+ggplot(ParasiteCod) +
+  geom_boxplot(aes(x = Prevalence, y = Length)) +
+  theme_classic() +
+  ggtitle('Distribuição do comprimento por prevalência do parasita') +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+Outra variável presente no modelo é a área e, no gráfico abaixo vemos que para área tem uma proporção diferente de prevalência. Os valores de proporção estão na tabela seguinte. 
+
+```{r}
+
+ParasiteCod %>% 
+  group_by(Prevalence, fArea) %>% 
+  summarise(contagem = n()) %>% 
+  ggplot(aes(x = fArea, y = contagem, fill = Prevalence)) +
+  geom_col(position = "dodge") +
+  theme_classic() + ylab('Número de ocorrências') + xlab('Área') +
+  ggtitle('Comparação entre prevalência por área') +
+    theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+```{r}
+
+ParasiteCod %>% 
+  group_by(Prevalence, fArea) %>% 
+  summarise(contagem = n()) %>% 
+  pivot_wider(id_cols = 'fArea', names_from = 'Prevalence', values_from = 'contagem') %>% 
+  mutate(`Prevalence proportion` = (`1`/(`1`+`0`))) %>% 
+  kable(row.names = F)
+
+
+```
+
+
+O ano da observação é outra variável descritiva do modelo e, novamente vemos no gráfico e na tabela abaixo que a proporção de prevalência varia de ano para ano.
+
+
+```{r}
+
+ParasiteCod %>% 
+  group_by(Prevalence, fYear) %>% 
+  summarise(contagem = n()) %>% 
+  ggplot(aes(x = fYear, y = contagem, fill = Prevalence)) +
+  geom_col(position = "dodge") +
+  theme_classic() + ylab('Número de ocorrências') + xlab('Ano') +
+  ggtitle('Comparação entre prevalência por ano') +
+    theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+```{r}
+
+ParasiteCod %>% 
+  group_by(Prevalence, fYear) %>% 
+  summarise(contagem = n()) %>% 
+  pivot_wider(id_cols = 'fYear', names_from = 'Prevalence', values_from = 'contagem') %>% 
+  mutate(`Prevalence proportion` = (`1`/(`1`+`0`))) %>% 
+  kable(row.names = F)
+
+```
+
+
+Através da tabela abaixo observamos que dentro de cada ano existe variação da proporção de prevalência por área, isso significa que é necessário considerar a interação entre as variáveis no modelo, assim como foi feito.
+
+```{r}
+
+ParasiteCod %>% 
+  group_by(Prevalence, fArea, fYear) %>% 
+  summarise(contagem = n()) %>% 
+  pivot_wider(id_cols = c('fYear', 'fArea'), names_from = 'Prevalence', values_from = 'contagem') %>% 
+  mutate(`Prevalence proportion` = scales::percent(`1`/(`1`+`0`))) %>% 
+  pivot_wider(id_cols = 'fArea', names_from = 'fYear', values_from = 'Prevalence proportion') %>% 
+  kable(row.names = F) 
+
+
+```
+
+
+### Ajuste do modelo
+
+Na regressão logistica com função de ligação *logit* estamos construindo um modelo para 
+$$ ln(\frac{p}{1-p}) $$, 
+onde 
+$$\frac{p}{1-p} $$ 
+é a chance de acontecimento de um evento, no caso do conjunto de dados *ParasiteCod* é a chance de prevalência do parasita.
+
+
+```{r}
 
 P12 <- glm(Prevalence ~  Length+fArea * fYear ,
            family = binomial, data = ParasiteCod)
@@ -24,21 +135,61 @@ summary(P12)
 
 ```
 
+Os fatores de referência são *fYear* = 1999 e *fArea* = 1.
+*Length* é uma variável contínua e sua média é `r  round(mean(ParasiteCod$Length, na.rm = T), 2)`. Usaremos a média do comprimento para o cálculo das probabilidades de cada ano e área.
+
+#### Interpretação da chance de prevalência
+
+Para encontrar a probabilidade dos eventos precisamos calcular o inverso da função de ligação utilizando os coeficientes resultantes do treinamento do modelo.
+
+```{r, message=F, warning=F, echo=F}
+## calculando a probabilidade para chamar no texto abaixo
+p <- exp(coef(P12)[1]+(coef(P12)[2]*mean(ParasiteCod$Length, na.rm = T)))
+prob <- round((p/(1+p)),2)
+
+```
 
 
-```{r}
+**Ex.:** 
+A probabilidade de prevalência do parasita quando o ano é **1999** e a área é **1** é utiliza os coeficientes `r coef(P12)[1]`, e `r coef(P12)[2]`, 
+onde 
+$$ p = exp\{ \beta_0 + \beta_1x_1 + ... + \beta_nx_n\} $$ 
+é a probabilidade de prevalência nesse cenário é 
+$$ \frac{p}{1+p} $$
+Então, a probabilidade de prevalência de parasita no ano de 1999 na área 1 com comprimento de `r round(mean(ParasiteCod$Length, na.rm = T), 2) ` é `r prob`.
 
-drop1(P12, test = "Chi")
 
 
+**Ex.:** 
+Para calcular as probabilidades das interações, todas as informações referentes às características da amostra para a qual queremos calcular a probabilidade são utilizadas.
+Considerando agora a probabilidade de prevalência na área **2** no ano **2000**, para isso precisaremos considerar os seguintes $\beta_s$:
+
+* intercepto: `r P12$coefficients[1]`
+* efeito do comprimento: `r P12$coefficients[2]`
+* efeito da área 2: `r P12$coefficients[3]`
+* efeito do ano 2000: `r P12$coefficients[6]`
+* efeito da interação entre ano e área: `r P12$coefficients[8]`
+
+
+```{r, message=F, warning=F, echo=F}
+## calculando a probabilidade para chamar no texto abaixo
+p <- exp(coef(P12)[1]+(coef(P12)[2]*mean(ParasiteCod$Length, na.rm = T))+coef(P12)[3]+coef(P12)[6]+coef(P12)[8])
+prob <- round((p/(1+p)),2)
 
 ```
 
+Portanto, a probabilidade de prevalência do parasita, considerando comprimento médio, na área **2** no ano **2000** é `r scales::percent(prob)`.
 
-```{r}
-anova(P12, test = "Chi")
 
-```
+#### Interpretação da razão de chance
+
+
+
+
+
+
+
+
 
 
 
