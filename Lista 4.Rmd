@@ -7,14 +7,23 @@ output:
     extra_dependencies: 
   html_document:
     df_print: paged
+fig_width: 6 
+fig_height: 4 
+header-includes:
+   - \usepackage[brazil]{babel}
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align = "center", 
+                      warning = FALSE, message = FALSE)
+```
 
 ```{r}
 
 library(tidyverse)
 library(ggplot2) 
 library(knitr)
+library(kableExtra)
 
 ```
 
@@ -120,7 +129,7 @@ ParasiteCod %>%
 ### Ajuste do modelo
 
 Na regressão logistica com função de ligação *logit* estamos construindo um modelo para 
-$$ ln(\frac{p}{1-p}), $$ 
+$$ ln\left(\frac{p}{1-p}\right), $$ 
 onde 
 $$\frac{p}{1-p} $$ 
 é a chance de acontecimento de um evento, no caso do conjunto de dados *ParasiteCod* é a chance de prevalência do parasita.
@@ -178,9 +187,27 @@ prob <- round((p/(1+p)),2)
 
 ```
 
+
+
+
 Portanto, a probabilidade de prevalência do parasita, considerando comprimento médio, na área **2** no ano **2000** é `r scales::percent(prob)`.
 
 **Ex.:**  Com o auxílio da função predict podemos calcular as probabilidades pra todas combinações de ano e área. A Tabela (\ref{probabilidades}) apresenta as probabilidades calculadas para as combinações de ano e área, e os resultados nos mostram os efeitos das interações. Por exemplo, a probabilidade em relação ao nível 3 de área e ano 1999 é menor que do nível 1 de área e ano 1999, isso devido ao efeito negativo do nível 3 da variável área. Mas a probabilidade em relação a área 3 e ano de 2001 é maior que a probabilidade da área 1 e o ano de 2001, isso devido ao fato do efeito da interação entre o ano de 2001 e o nível 3 da variável área. A conclusão é a mesma ao observarmos a área 2. Isso quer dizer que os os níveis da variável área tem um efeito diferente dependendo do ano, oque caracteriza uma interação entre área e ano.   
+
+
+```{r, echo=FALSE}
+X = expand.grid(Length=53.45,
+                fArea = levels(ParasiteCod$fArea),
+                fYear = levels(ParasiteCod$fYear))
+
+probs = predict(P12, X, type = "response")
+
+cbind(X, Probabilidade = probs) %>%
+  kable(digits = 2,
+        booktabs=TRUE, linesep="",
+        caption = "Probabilidade calculada para cada nível de área e ano com Length fixo em 53,45.") %>%
+  kable_styling(latex_options = "hold_position")
+```
 
 \begin{table}[ht]
 \centering
@@ -205,6 +232,22 @@ Portanto, a probabilidade de prevalência do parasita, considerando comprimento 
 \end{tabular}
 \label{probabilidades}
 \end{table}
+
+
+```{r, fig.cap="Probabilidade predita dado o comprimento por Área e Ano."}
+Xn = expand.grid(Length=with(ParasiteCod, seq(min(Length, na.rm = T),
+                                              max(Length, na.rm = T),
+                                              length.out = 10)),
+                fArea = levels(ParasiteCod$fArea),
+                fYear = levels(ParasiteCod$fYear))
+
+Xn = cbind(Xn, prob = predict(P12, Xn, type="response"))
+
+ggplot(Xn, aes(Length, prob, color=fArea, linetype=fYear)) +
+  geom_line() +
+  labs(y="Probabilidade predita") +
+  theme_classic()
+```
 
 #### Interpretação da razão de chance
 
