@@ -1,0 +1,373 @@
+---
+title: 'Lista 4'
+author: ''
+date: ''
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    extra_dependencies: ["float"]
+fig_width: 6 
+fig_height: 4 
+header-includes:
+   - \usepackage[brazil]{babel}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.align = "center", 
+                      warning = FALSE, message = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(ggplot2) 
+library(knitr)
+library(kableExtra)
+```
+
+
+
+## Banco de dados ParasiteCod
+
+```{r}
+ParasiteCod <- read.csv('ParasiteCod.txt', sep = '\t')
+ParasiteCod$fArea <- factor(ParasiteCod$Area)
+ParasiteCod$fYear <- factor(ParasiteCod$Year)
+ParasiteCod$Prevalence <- factor(ParasiteCod$Prevalence)
+```
+
+O modelo entregue para análise utiliza as variáveis *Length*, *Area* e *Year* para explicar a prevalência do parasita.
+
+Através do gráfico abaixo vemos que a distribuição da variável *Length* é parecida em casos com e sem prevalência do parasita.
+
+
+```{r}
+ggplot(ParasiteCod) +
+  geom_boxplot(aes(x = Prevalence, y = Length)) +
+  theme_classic() +
+  ggtitle('Distribuição do comprimento por prevalência do parasita') +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Outra variável presente no modelo é a área e, no gráfico abaixo vemos que para área tem uma proporção diferente de prevalência. Os valores de proporção estão na tabela seguinte. 
+
+```{r}
+ParasiteCod %>% 
+  group_by(Prevalence, fArea) %>% 
+  summarise(contagem = n()) %>% 
+  ggplot(aes(x = fArea, y = contagem, fill = Prevalence)) +
+  geom_col(position = "dodge") +
+  theme_classic() + ylab('Número de ocorrências') + xlab('Área') +
+  ggtitle('Comparação entre prevalência por área') +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ParasiteCod %>% 
+  group_by(Prevalence, fArea) %>% 
+  summarise(contagem = n()) %>% 
+  pivot_wider(id_cols = 'fArea', names_from = 'Prevalence', values_from = 'contagem') %>% 
+  mutate(`Prevalence proportion` = (`1`/(`1`+`0`))) %>% 
+  kable(row.names = F)
+```
+
+
+O ano da observação é outra variável descritiva do modelo e, novamente vemos no gráfico e na tabela abaixo que a proporção de prevalência varia de ano para ano.
+
+
+```{r}
+ParasiteCod %>% 
+  group_by(Prevalence, fYear) %>% 
+  summarise(contagem = n()) %>% 
+  ggplot(aes(x = fYear, y = contagem, fill = Prevalence)) +
+  geom_col(position = "dodge") +
+  theme_classic() + ylab('Número de ocorrências') + xlab('Ano') +
+  ggtitle('Comparação entre prevalência por ano') +
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ParasiteCod %>% 
+  group_by(Prevalence, fYear) %>% 
+  summarise(contagem = n()) %>% 
+  pivot_wider(id_cols = 'fYear', names_from = 'Prevalence', values_from = 'contagem') %>% 
+  mutate(`Prevalence proportion` = (`1`/(`1`+`0`))) %>% 
+  kable(row.names = F)
+```
+
+
+Através da tabela abaixo observamos que dentro de cada ano existe variação da proporção de prevalência por área, isso significa que é necessário considerar a interação entre as variáveis no modelo, assim como foi feito.
+
+```{r}
+ParasiteCod %>% 
+  group_by(Prevalence, fArea, fYear) %>% 
+  summarise(contagem = n()) %>% 
+  pivot_wider(id_cols = c('fYear', 'fArea'), names_from = 'Prevalence', values_from = 'contagem') %>% 
+  mutate(`Prevalence proportion` = scales::percent(`1`/(`1`+`0`))) %>% 
+  pivot_wider(id_cols = 'fArea', names_from = 'fYear', values_from = 'Prevalence proportion') %>% 
+  kable(row.names = F) 
+```
+
+
+### Ajuste do modelo
+O modelo de regressão logística pode ser definido como
+\[\begin{split}
+Y_{ijk} & \stackrel{ind.}{\sim} Bernoulli(\pi_{ijk})\\
+\log \left(\frac{\pi_{ijk}}{1 - \pi_{ijk}}\right) &= \beta_0 + \beta_1 \textrm{Comprimento} +\beta_{2j}\textrm{Area}_j +
+\beta_{3k}\textrm{Ano}_k + \beta_{5jk} \textrm{Area}_j\textrm{Ano}_k\\
+\end{split}\]
+em que $i = 1, \dots, n_{jk}$ representa o parasita $i$ na área $j = 1, 2, 3, 4$ no ano $k = 1,2,3$. E $\pi_{ijk}$ é a probabilidade do parasita $i$ prevalecer na área $j$ no ano $k$.
+
+
+```{r}
+P12 <- glm(Prevalence ~  Length+fArea * fYear ,
+           family = binomial, data = ParasiteCod)
+summary(P12)
+```
+
+Os fatores de referência são *fYear* = 1999 e *fArea* = 1.
+*Length* é uma variável contínua e sua média é `r  round(mean(ParasiteCod$Length, na.rm = T), 2)`. Usaremos a média do comprimento para o cálculo das probabilidades de cada ano e área.
+
+#### Interpretação da chance de prevalência
+
+Para encontrar a probabilidade dos eventos precisamos calcular o inverso da função de ligação utilizando os coeficientes resultantes do treinamento do modelo.
+
+```{r, message=F, warning=F, echo=F}
+## calculando a probabilidade para chamar no texto abaixo
+p <- exp(coef(P12)[1]+(coef(P12)[2]*mean(ParasiteCod$Length, na.rm = T)))
+prob <- round((p/(1+p)),2)
+```
+
+
+**Ex.:** 
+A probabilidade de prevalência do parasita quando o ano é **1999** e a área é **1** utilizando os coeficientes `r coef(P12)[1]`, e `r coef(P12)[2]` é dada por
+$$ \hat{\pi}_{i11} = \frac{exp\{ \beta_0 + \hat{\beta}_1 \textrm{Comprimento} + \hat{\beta}_{21}\textrm{Area}_1 +
+\hat{\beta}_{31}\textrm{Ano}_1 + \hat{\beta}_{511} \textrm{Area}_1\textrm{Ano}_1\}}{(1 + exp\{ \beta_0 + \hat{\beta}_1 \textrm{Comprimento} + \hat{\beta}_{21}\textrm{Area}_1 +
+\hat{\beta}_{31}\textrm{Ano}_1 + \hat{\beta}_{511} \textrm{Area}_1\textrm{Ano}_1\})} $$ 
+
+Então, a probabilidade de prevalência de parasita no ano de 1999 na área 1 com comprimento de `r round(mean(ParasiteCod$Length, na.rm = T), 2) ` é `r prob`.
+
+
+
+**Ex.:** 
+Para calcular as probabilidades das interações, todas as informações referentes às características da amostra para a qual queremos calcular a probabilidade são utilizadas.
+Considerando agora a probabilidade de prevalência na área **2** no ano **2000**, para isso precisaremos considerar os seguintes $\beta_s$:
+
+* intercepto: `r P12$coefficients[1]`
+* efeito do comprimento: `r P12$coefficients[2]`
+* efeito da área 2: `r P12$coefficients[3]`
+* efeito do ano 2000: `r P12$coefficients[6]`
+* efeito da interação entre ano e área: `r P12$coefficients[8]`
+
+
+```{r, message=F, warning=F, echo=F}
+## calculando a probabilidade para chamar no texto abaixo
+p <- exp(coef(P12)[1]+(coef(P12)[2]*mean(ParasiteCod$Length, na.rm = T))+coef(P12)[3]+coef(P12)[6]+coef(P12)[8])
+prob <- round((p/(1+p)),2)
+```
+
+
+
+
+Portanto, a probabilidade de prevalência do parasita, considerando comprimento médio, na área **2** no ano **2000** é `r scales::percent(prob)`.
+
+**Ex.:**  Com o auxílio da função predict podemos calcular as probabilidades pra todas combinações de ano e área. A Tabela (\ref{probabilidades}) apresenta as probabilidades calculadas para as combinações de ano e área, e os resultados nos mostram os efeitos das interações. Por exemplo, a probabilidade em relação ao nível 3 de área e ano 1999 é menor que do nível 1 de área e ano 1999, isso devido ao efeito negativo do nível 3 da variável área. Mas a probabilidade em relação a área 3 e ano de 2001 é maior que a probabilidade da área 1 e o ano de 2001, isso devido ao fato do efeito da interação entre o ano de 2001 e o nível 3 da variável área. A conclusão é a mesma ao observarmos a área 2. Isso quer dizer que os os níveis da variável área tem um efeito diferente dependendo do ano, oque caracteriza uma interação entre área e ano.   
+
+
+```{r, echo=FALSE}
+X = expand.grid(Length=53.45,
+                fArea = levels(ParasiteCod$fArea),
+                fYear = levels(ParasiteCod$fYear))
+probs = predict(P12, X, type = "response")
+cbind(X, Probabilidade = probs) %>%
+  kable(digits = 2,
+        booktabs=TRUE, linesep="",
+        caption = "Probabilidade calculada para cada nível de área e ano com Length fixo em 53,45.") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+
+
+Na figura abaixo são apresentadas as probabilidades de prevalência por comprimento dado a área e o ano.
+```{r, fig.cap="Probabilidade predita dado o comprimento por Área e Ano.", fig.pos="H"}
+Xn = expand.grid(Length=with(ParasiteCod, seq(min(Length, na.rm = T),
+                                              max(Length, na.rm = T),
+                                              length.out = 10)),
+                fArea = levels(ParasiteCod$fArea),
+                fYear = levels(ParasiteCod$fYear))
+Xn = cbind(Xn, prob = predict(P12, Xn, type="response"))
+ggplot(Xn, aes(Length, prob, color=fArea, linetype=fYear)) +
+  geom_line() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(y="Probabilidade predita") +
+  theme_classic()
+```
+
+Vamos interpretar como as probabilidades estimadas se comportam nos niveis da variável ano para a área fixa
+
+Área 1
+
+Ano 1999
+$$
+\pi_{i11} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto})}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto})}
+$$
+
+Ano 2000
+$$
+\pi_{i12} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto} + `r coef(P12)[6]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto} + `r coef(P12)[6]`)}
+$$
+
+Ano 2001
+$$
+\pi_{i13} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[7]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[7]`)}
+$$
+
+Logo, $\pi_{i12} > \pi_{i11} > \pi_{i13}$.
+Área 2
+
+Ano 1999
+$$
+\pi_{i21} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[3]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto} `r coef(P12)[3]`)}
+$$
+Ano 2000
+$$
+\pi_{i22} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[3]` + `r coef(P12)[6]` `r coef(P12)[8]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[3]` + `r coef(P12)[6]` `r coef(P12)[8]`)}
+$$
+Ano 2001
+$$
+\pi_{i23} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[3]`  `r coef(P12)[7]`+ `r coef(P12)[11]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}`r coef(P12)[3]``r coef(P12)[7]` + `r coef(P12)[11]`)}
+$$
+
+Logo, $\pi_{i22} > \pi_{i21} > \pi_{i23}$.
+Área 3
+
+Ano 1999
+$$
+\pi_{i31} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[4]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}`r coef(P12)[4]`)}
+$$
+Ano 2000
+$$
+\pi_{i32} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[4]`+ `r coef(P12)[6]` + `r coef(P12)[9]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}`r coef(P12)[4]` + `r coef(P12)[6]`+ `r coef(P12)[9]`)}
+$$
+Ano 2001
+$$
+\pi_{i33} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}  `r coef(P12)[4]`  `r coef(P12)[7]` + `r coef(P12)[12]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}`r coef(P12)[4]`  `r coef(P12)[7]` + `r coef(P12)[12]`)}
+$$
+
+Logo, $\pi_{i32} > \pi_{i31} > \pi_{i33}$.
+Área 4
+
+Ano 1999
+$$
+\pi_{i41} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto} + `r coef(P12)[5]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}+`r coef(P12)[5]`)}
+$$
+Ano 2000
+$$
+\pi_{i42} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto} + `r coef(P12)[5]` + `r coef(P12)[6]` + `r coef(P12)[10]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}+`r coef(P12)[5]`  + `r coef(P12)[6]` + `r coef(P12)[10]`)}
+$$
+Ano 2001
+$$
+\pi_{i43} = \frac{\exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto} + `r coef(P12)[5]`  `r coef(P12)[7]` + `r coef(P12)[13]`)}{1 + \exp(`r coef(P12)[1]` +  `r coef(P12)[2]`\textrm{Comprimeto}+`r coef(P12)[5]` `r coef(P12)[7]` + `r coef(P12)[13]`)}
+$$
+
+Logo, $\pi_{i42} > \pi_{i41} > \pi_{i43}$.
+#### Interpretação da razão de chance
+
+O modelo de regressão logística é caracterizado pela seguinte relação entre a probabilidade $p$ e o preditor linear $X\bf{\beta}$
+
+$$
+\log\left( \frac{p_i}{1 - p_i}\right) = X\bf{\beta},
+$$
+
+em que $X$ é uma matriz de dimensão $n\times p$ com as covariáveis e $\beta$ o vetor de coeficientes de dimensão $p$. Podemos calcular os efeitos das covariáveis na razão de $p_i/(1 - p_i)$, que chamamos de razão de chances. Logo,
+
+\begin{itemize}
+\item $\exp(0.08516)$ = 1.088, a chance de prevalência do parasita aumenta em 8.8\% com o aumento de uma unidade de comprimento.
+
+\item $\exp(-1.185849)$ = 0.3054, a chance de prevalência do parasita na área 2 é 70\% menor que na área 1 para o ano de 1999.
+
+\item $\exp(0.383756)$ = 1.46778, a chance de prevalência do parasita no ano de 2000 aumenta em 46\% em relação ao ano de 1999 para a área 1.
+
+\item $\exp(-0.209035)$ = 0.81136, a chance de prevalência do parasita na área 2 é 19\% menor do que na área 1 em relação ao ano de 2000, mas a chance de prevalência do parasita na área 2 é 1240\% ($\exp(2.595866) = 13.4$) maior que na área 1 em relação ao ano de 2001. O que concluímos que claramente a área tem um efeito diferente na prevalência dependendo do ano selecionado.
+\end{itemize}
+
+
+## Banco de dados hdp
+
+```{r}
+library(lme4)
+hdp <- read.csv("dados/hdp.txt")
+hdp <- within(hdp, {
+  Married <- factor(Married, levels = 0:1, labels = c("no", "yes"))
+  DID <- factor(DID) 
+  HID <- factor(HID)
+})
+model <- glmer(remission ~ 1 + CancerStage + (1 + CancerStage | DID), data = hdp, 
+           family = 'binomial', control = glmerControl(optimizer = 'bobyqa'))
+#BOBYQA:Bound Optimization by Quadratic Approximation
+# summary(model)
+```
+
+### Definição do modelo
+
+O modelo ajustado para o banco de dados hdp é na forma
+
+\[\begin{split}
+Y_{ijk}|b_{ij} & \stackrel{ind.}{\sim} Bernoulli(\pi_{ij})\\
+\log \left(\frac{\pi_{ij}}{1 - \pi_{ij}}\right) &= \beta_0 + \beta_i + b_i + \gamma_j \\
+b_i &\stackrel{ind.}{\sim} N(0, \sigma^2_a) \\
+\gamma_j &\stackrel{ind.}{\sim} N(0, \sigma^2_b),
+\end{split}\]
+em que $i = 1, \dots, 4$ representa o estágio do câncer, $j = 1, \dots, 407$ representa o médico, $k = 1, \dots, n_{ij}$ é a repetição e toma-se $\beta_1=0$.
+
+
+### Interpretação dos efeitos fixos
+
+Os coeficientes dos efeitos fixos estão apresentados na tabela abaixo.
+
+```{r echo=FALSE}
+efeitos_fixos <- lme4::fixef(model) %>%
+  enframe("Termo", "Estimativa")
+  
+efeitos_fixos[1,1] <- "Intercepto"
+kable(efeitos_fixos, digits = 4L,
+      caption="Estimativas dos efeitos fixos.",
+      booktabs=TRUE, linesep="") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+O exponencial das estimativas da tabela acima são interpretadas como a razão de chances marginal, ou seja, A chance marginal de se ter remissão é
+
+- 45,34\% menor para o estágio II em relação ao I.
+- 71,94\% menor para o estágio III em relação ao I.
+- 95,59\% menor para o estágio IV em relação ao I.
+
+As probabilidades marginais de remissão para cada estágio está apresentada na tabela abaixo.
+
+```{r}
+estagio_cancer = expand_grid(CancerStage = sort(unique(hdp$CancerStage)))
+prob_rem = predict(model, estagio_cancer, re.form=NA, type="response")
+cbind(estagio_cancer, prob_rem) %>%
+  kable(digits=4, col.names = c("Estágio do câncer", "Probabilidade de Remissão"),
+        caption = "Probabilidade de remissão por estãgio do câncer estimadas.",
+        booktabs=TRUE, linesep="") %>%
+  kable_styling(latex_options = "HOLD_position")
+```
+
+Pela razão de chances e pela tabela apresentada acima, nota-se que quanto mais avançado o estágio do câncer, menor a chance de remissão.
+
+
+## Exercício
+
+Provar que $y_{ij}$ e $y_{ik}$ estão correlacionados.
+
+**Resposta:**
+
+Seja $y_i|\bf{b} \sim$ Bernoulli($\pi_i$).
+
+$E[y_i|\bf{b}] = \pi_i$ e $g(\pi) = \bf{x}_i\boldsymbol{\beta} + \bf{z}_i\boldsymbol{b}$.
+
+$$Cov(y_i, y_j) = Cov(E(y_i|\bf{b}),E(y_j|\bf{b})) + E(Cov(y_i, y_j|\bf{b})) = Cov(\pi_i, \pi_j) + 0$$
+$$Cov(\pi_i, \pi_j) = Cov\left(\frac{\exp(\bf{x}_i \boldsymbol{\beta} + \bf{z}_i \boldsymbol{b})}{1 + \exp(\bf{x}_i \boldsymbol{\beta} + \bf{z}_i \boldsymbol{b})}, \frac{\exp(\bf{x}_j \boldsymbol{\beta} + \bf{z}_j \boldsymbol{b})}{1 + \exp(\bf{x}_j \boldsymbol{\beta} + \bf{z}_j \boldsymbol{b})}\right) $$
+
+
