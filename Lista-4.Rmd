@@ -3,8 +3,6 @@ title: 'Lista 4'
 author: ''
 date: ''
 output:
-  html_document:
-    df_print: paged
   pdf_document:
     extra_dependencies: ["float"]
 fig_width: 6 
@@ -68,7 +66,11 @@ ParasiteCod %>%
   summarise(contagem = n()) %>% 
   pivot_wider(id_cols = 'fArea', names_from = 'Prevalence', values_from = 'contagem') %>% 
   mutate(`Prevalence proportion` = (`1`/(`1`+`0`))) %>% 
-  kable(row.names = F)
+  kable(row.names = F,
+        caption = "Prevaência do parasita por área",
+        booktabs = TRUE, linesep = "") %>%
+  add_header_above(c(" ", "Prevaência" = 2, " ")) %>%
+  kable_styling(latex_options = "HOLD_position")
 ```
 
 
@@ -92,7 +94,11 @@ ParasiteCod %>%
   summarise(contagem = n()) %>% 
   pivot_wider(id_cols = 'fYear', names_from = 'Prevalence', values_from = 'contagem') %>% 
   mutate(`Prevalence proportion` = (`1`/(`1`+`0`))) %>% 
-  kable(row.names = F)
+  kable(row.names = F,
+        caption = "Prevaência do parasita por Ano",
+        booktabs = TRUE, linesep = "") %>%
+  add_header_above(c(" ", "Prevaência" = 2, " ")) %>%
+  kable_styling(latex_options = "HOLD_position")
 ```
 
 
@@ -102,10 +108,15 @@ Através da tabela abaixo observamos que dentro de cada ano existe variação da
 ParasiteCod %>% 
   group_by(Prevalence, fArea, fYear) %>% 
   summarise(contagem = n()) %>% 
-  pivot_wider(id_cols = c('fYear', 'fArea'), names_from = 'Prevalence', values_from = 'contagem') %>% 
+  pivot_wider(id_cols = c('fYear', 'fArea'), 
+              names_from = 'Prevalence', values_from = 'contagem') %>% 
   mutate(`Prevalence proportion` = scales::percent(`1`/(`1`+`0`))) %>% 
-  pivot_wider(id_cols = 'fArea', names_from = 'fYear', values_from = 'Prevalence proportion') %>% 
-  kable(row.names = F) 
+  pivot_wider(id_cols = 'fArea',
+              names_from = 'fYear', values_from = 'Prevalence proportion') %>% 
+  kable(row.names = F,
+        caption = "Prevaência do parasita por área e ano",
+        booktabs = TRUE, linesep = "") %>%
+  kable_styling(latex_options = "HOLD_position")
 ```
 
 
@@ -171,7 +182,7 @@ prob <- round((p/(1+p)),2)
 
 Portanto, a probabilidade de prevalência do parasita, considerando comprimento médio, na área **2** no ano **2000** é `r scales::percent(prob)`.
 
-**Ex.:**  Com o auxílio da função predict podemos calcular as probabilidades pra todas combinações de ano e área. A Tabela (\ref{probabilidades}) apresenta as probabilidades calculadas para as combinações de ano e área, e os resultados nos mostram os efeitos das interações. Por exemplo, a probabilidade em relação ao nível 3 de área e ano 1999 é menor que do nível 1 de área e ano 1999, isso devido ao efeito negativo do nível 3 da variável área. Mas a probabilidade em relação a área 3 e ano de 2001 é maior que a probabilidade da área 1 e o ano de 2001, isso devido ao fato do efeito da interação entre o ano de 2001 e o nível 3 da variável área. A conclusão é a mesma ao observarmos a área 2. Isso quer dizer que os os níveis da variável área tem um efeito diferente dependendo do ano, oque caracteriza uma interação entre área e ano.   
+**Ex.:**  Com o auxílio da função predict podemos calcular as probabilidades pra todas combinações de ano e área. A Tabela abaixo apresenta as probabilidades calculadas para as combinações de ano e área, e os resultados nos mostram os efeitos das interações. Por exemplo, a probabilidade em relação ao nível 3 de área e ano 1999 é menor que do nível 1 de área e ano 1999, isso devido ao efeito negativo do nível 3 da variável área. Mas a probabilidade em relação a área 3 e ano de 2001 é maior que a probabilidade da área 1 e o ano de 2001, isso devido ao fato do efeito da interação entre o ano de 2001 e o nível 3 da variável área. A conclusão é a mesma ao observarmos a área 2. Isso quer dizer que os os níveis da variável área tem um efeito diferente dependendo do ano, oque caracteriza uma interação entre área e ano.   
 
 
 ```{r, echo=FALSE}
@@ -271,6 +282,7 @@ $$
 $$
 
 Logo, $\pi_{i42} > \pi_{i41} > \pi_{i43}$.
+
 #### Interpretação da razão de chance
 
 O modelo de regressão logística é caracterizado pela seguinte relação entre a probabilidade $p$ e o preditor linear $X\bf{\beta}$
@@ -312,13 +324,25 @@ model <- glmer(remission ~ 1 + CancerStage + (1 + CancerStage | DID), data = hdp
 
 O modelo ajustado para o banco de dados hdp é na forma
 
-\[\begin{split}
-Y_{ijk}|b_{ij} & \stackrel{ind.}{\sim} Bernoulli(\pi_{ij})\\
-\log \left(\frac{\pi_{ij}}{1 - \pi_{ij}}\right) &= \beta_0 + \beta_i + b_i + \gamma_j \\
-b_i &\stackrel{ind.}{\sim} N(0, \sigma^2_a) \\
-\gamma_j &\stackrel{ind.}{\sim} N(0, \sigma^2_b),
-\end{split}\]
-em que $i = 1, \dots, 4$ representa o estágio do câncer, $j = 1, \dots, 407$ representa o médico, $k = 1, \dots, n_{ij}$ é a repetição e toma-se $\beta_1=0$.
+\[
+\begin{split}
+Y_{ijk}|\mathbf{b_{i}} & \stackrel{ind.}{\sim} Bernoulli(\pi_{ij})\\
+\log \left(\frac{\pi_{ij}}{1 - \pi_{ij}}\right) &= \beta_0 + \beta_{1j} + b_{0i} + b_{1ji} \\
+\mathbf{b_{i}} &= \begin{bmatrix}
+b_{0i} \\
+b_{12i} \\
+b_{13i} \\
+b_{14i} \\
+\end{bmatrix} \sim N(\mathbf{0}, \mathbf \Sigma_i) \\
+\mathbf \Sigma_i &= \begin{bmatrix}
+\sigma_{0}^2 & & & \\
+\sigma_{02}& \sigma_{2}^2 &  & \\
+\sigma_{03} & \sigma_{23} & \sigma_{3}^2 & \\
+\sigma_{04} & \sigma_{24} & \sigma_{34} & \sigma_{4}^2
+\end{bmatrix},
+\end{split}
+\]
+em que $i = 1, \dots, 407$ representa o médico, $j = 1, \dots, 4$ representa o estágio do câncer, $k = 1, \dots, n_{ij}$ é a repetição, e a matriz $\mathbf \Sigma_i$ é simétrica.
 
 
 ### Interpretação dos efeitos fixos
@@ -336,13 +360,13 @@ kable(efeitos_fixos, digits = 4L,
   kable_styling(latex_options = "HOLD_position")
 ```
 
-O exponencial das estimativas da tabela acima são interpretadas como a razão de chances marginal, ou seja, A chance marginal de se ter remissão é
+O exponencial das estimativas da tabela acima são interpretadas como a razão de chances populacional, ou seja, A chance populacional de se ter remissão é
 
 - 45,34\% menor para o estágio II em relação ao I.
 - 71,94\% menor para o estágio III em relação ao I.
 - 95,59\% menor para o estágio IV em relação ao I.
 
-As probabilidades marginais de remissão para cada estágio está apresentada na tabela abaixo.
+As probabilidades populacionais de remissão para cada estágio estão apresentadas na tabela abaixo.
 
 ```{r}
 estagio_cancer = expand_grid(CancerStage = sort(unique(hdp$CancerStage)))
