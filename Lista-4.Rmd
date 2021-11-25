@@ -29,7 +29,7 @@ library(kableExtra)
 
 ```{r}
 ParasiteCod <- read.csv('ParasiteCod.txt', sep = '\t')
-ParasiteCod$fArea <- factor(ParasiteCod$Area)
+ParasiteCod$fArea <- factor(ParasiteCod$Area)  # prova
 ParasiteCod$fYear <- factor(ParasiteCod$Year)
 ParasiteCod$Prevalence <- factor(ParasiteCod$Prevalence)
 ```
