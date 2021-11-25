@@ -8,6 +8,7 @@ output:
 ---
 
 
+
 \begin{minipage}{.8\textwidth}
 \textbf{Alunos:} Álvaro Kothe, Giovanni Piccirilli, Larissa Eleutério, Marcos Andrade
 

@@ -44,7 +44,6 @@ O modelo entregue para análise utiliza as variáveis *Length*, *Area* e *Year* 
 Através do gráfico abaixo vemos que a distribuição da variável *Length* é parecida em casos com e sem prevalência do parasita.
 
 
-
 ```{r}
 
 ggplot(ParasiteCod) +
