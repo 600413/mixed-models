@@ -1,0 +1,73 @@
+
+
+```{r}
+
+library(lme4)
+library(tidyverse)
+
+hdp <- read.csv('dados/hdp.txt')
+
+hdp$Experience2 <-(hdp$Experience-17.64129)/sqrt(var(hdp$Experience))
+hdp$Age2 <-(hdp$Age-50.97)/sqrt(var(hdp$Age))
+
+model2 <- glmer(ntumors ~ IL6+Age2+Sex+Married +Experience2+ (1 | HID/DID), 
+               data = hdp, 
+               family = 'poisson', 
+               control = glmerControl(optimizer = 'bobyqa'))
+summary(model2)
+
+
+model <- glmer(ntumors ~ IL6+Age2+Sex+Married + (1 | HID/DID), 
+               data = hdp, 
+               family = 'poisson', 
+               control = glmerControl(optimizer = 'bobyqa'))
+summary(model)
+
+```
+
+
+
+O valor esperado de número de tumores é para IL6 = 0, do paciente não casado com idade média e sexo feminino `r exp(fixef(model2)[1])`.
+
+Uma unidade acrecida do IL6 aumenta o valor esperado de tumores em `r exp(fixef(model2)[2])` vezes.
+
+Uma unidade acrecida de idade aumenta o valor esperado do número de tumores em `r exp(fixef(model2)[3]/sqrt(var(hdp$Age)))`
+
+O fato de ser do sexo masculino diminui o número de tumores em `r exp(fixef(model2)[4])`
+
+O fato de ser casado diminui o número de tumores em `r exp(fixef(model2)[5])`
+
+O efeito do médico 20 no hospital 2 é um aumento de `r exp(coef(model2)[[1]][20,][1] - fixef(model2)[1])` no número esperado de tumores.
+
+O efeito do hospital 2 aumenta o número de tumores em `r exp(coef(model2)[[2]][2,][1] - fixef(model2)[1])`.
+
+
+
+
+```{r}
+
+medico20 <- hdp %>% 
+  filter(DID == 20) %>% 
+  select(IL6,Age2,Sex,Married, Experience2, HID, DID)
+
+
+exp(coef(model2)[[1]][20,][1] - fixef(model2)[1] +
+  coef(model2)[[2]][2,][1] - fixef(model2)[1] +
+  fixef(model2)[1] +
+  fixef(model2)[2]*medico20$IL6[1] +
+  fixef(model2)[3]*medico20$Age2[1] +
+    fixef(model2)[4]*ifelse(medico20$Age2[1] == 'male', 0, 1) +
+  fixef(model2)[5]*medico20$Married[1])
+
+
+medico20 %>% predict(model2,., type = "response")
+
+```
+
+
+
+
+
+
+
+

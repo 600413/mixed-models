@@ -1,5 +1,6 @@
 
 
+library(lme4)
 
 hdp$Experience2 <-(hdp$Experience-17.64129)/sqrt(var(hdp$Experience))
 hdp$Age2 <-(hdp$Age-50.97)/sqrt(var(hdp$Age))
